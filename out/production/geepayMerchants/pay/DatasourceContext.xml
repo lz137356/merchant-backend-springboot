@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <bean id="pay_dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/jdbc/Service_Mysql_paycenter"/>
+    </bean>
+
+<!--    <bean id="pay_dataSource"-->
+<!--          class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+<!--        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>-->
+<!--        <property name="url" value="jdbc:mysql://rm-a2dm9e44shj66q6ifco.mysql.ap-south-1.rds.aliyuncs.com:3306/paycenter?useUnicode=true&amp;characterEncoding=GBK"/>-->
+<!--        <property name="username" value="geepay_user"/>-->
+<!--        <property name="password" value="IvM@ck#z9$Eqy3KGBA3V@B"/>-->
+<!--    </bean>-->
+
+</beans>

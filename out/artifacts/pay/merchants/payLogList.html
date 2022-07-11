@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/custom.css">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+
+    <style>
+        .demo-table-expand {
+            font-size: 0;
+        }
+
+        .demo-table-expand label {
+            width: 90px;
+            color: #99a9bf;
+        }
+
+        .demo-table-expand .el-form-item {
+            margin-right: 0;
+            margin-bottom: 0;
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak v-loading.fullscreen.lock="fullscreenLoading">
+    <template>
+        <el-form :model="searchForm" ref="searchForm" label-width="90px">
+            <el-row>
+                <el-col :xl="3" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="系统订单号" prop="id">
+                        <el-input v-model="searchForm.id" placeholder=""></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :xl="4" :lg="6" :md="6" :sm="8" :xs="1242" class="form-search">
+                    <el-form-item label="商户订单号" prop="orderId">
+                        <el-input v-model="searchForm.orderId" placeholder=""></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :xl="4" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="订单状态" prop="status">
+                        <el-select v-model="searchForm.status" placeholder="请选择">
+                            <el-option label="请选择" value=""></el-option>
+                            <el-option label="成功" value="1"></el-option>
+                            <el-option label="待处理" value="0"></el-option>
+                            <el-option label="失败" value="-1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col :xl="4" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="同步状态" prop="syncCnt">
+                        <el-select v-model="searchForm.syncCnt" placeholder="请选择">
+                            <el-option label="请选择" value=""></el-option>
+                            <el-option label="同步成功" value="1"></el-option>
+                            <el-option label="未回调" value="0"></el-option>
+                            <el-option label="失败重试" value="-1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-col>
+                <el-col v-if="cpinfo.country === 'MEX'" :xl="4" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="clabe" prop="clabe">
+                        <el-input v-model="searchForm.clabe" placeholder=""></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col v-if="cpinfo.country === 'MEX'" :xl="4" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="Clave De Rsstreo" prop="rastreo">
+                        <el-input v-model="searchForm.rastreo" placeholder=""></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :xl="4" :lg="6" :md="6" :sm="8" :xs="24" class="form-search">
+                    <el-form-item label="金额" prop="amount">
+                        <el-input v-model="searchForm.amount" placeholder=""></el-input>
+                    </el-form-item>
+                </el-col>
+                <el-col :xl="4" :lg="8" :md="8" :sm="12" :xs="24" class="form-search">
+                    <el-form-item label="起始时间">
+                        <el-col :span="11">
+                            <el-date-picker
+                                    v-model="early"
+                                    type="datetimerange"
+                                    :clearable="true"
+                                    :default-time="['00:00:00', '23:59:59']"
+                                    value-format="yyyy-MM-dd HH:mm:ss"
+                                    placeholder="选择起始日期"
+                                    :picker-options="pickerOptionsStart">
+                            </el-date-picker>
+                        </el-col>
+
+                    </el-form-item>
+
+                </el-col>
+
+            </el-row>
+            <el-row>
+
+            </el-row>
+            <el-form-item class="search-button">
+                <el-button type="primary" @click="search">查询</el-button>
+                <el-button @click="resetForm('searchForm')">重置</el-button>
+                <el-button @click="exportPayLog()">导出</el-button>
+            </el-form-item>
+
+        </el-form>
+        <!--            <div style="margin-left: 30px">-->
+        <!--                <el-row :gutter="20">-->
+        <!--                    <el-col :span="3"><div class="grid-content bg-purple">-->
+        <!--                        <span class="show-statictics-span">-->
+        <!--                            订单总额：{{}}-->
+        <!--                        </span>-->
+        <!--                    </div></el-col>-->
+        <!--                    <el-col :span="3"><div class="grid-content bg-purple">-->
+        <!--                        <span class="show-statictics-span">-->
+        <!--                            实付订单总额：{{}}-->
+        <!--                        </span>-->
+        <!--                    </div></el-col>-->
+        <!--                    <el-col :span="3"><div class="grid-content bg-purple">-->
+        <!--                        <span class="show-statictics-span">-->
+        <!--                            实付手续费：{{}}-->
+        <!--                        </span>-->
+        <!--                    </div></el-col>-->
+        <!--                    <el-col :span="3"><div class="grid-content bg-purple">-->
+        <!--                        <span class="show-statictics-span">-->
+        <!--                            实付订单数：{{}}-->
+        <!--                        </span>-->
+        <!--                    </div></el-col>-->
+        <!--                </el-row>-->
+        <!--            </div>-->
+        <div id="grid" style="width: 100%">
+            <el-table
+                    :data="tableData"
+                    style="width: 100%">
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                            <el-form-item label="跳转地址">
+                                <span>{{ props.row.callbackUrl }}</span>
+                            </el-form-item>
+                            <el-form-item label="回调地址">
+                                <span>{{ props.row.notifyUrl }}</span>
+                            </el-form-item>
+                            <el-form-item label="备注">
+                                <span>{{ props.row.description }}</span>
+                            </el-form-item>
+                        </el-form>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="id"
+                        label="订单号">
+                </el-table-column>
+                <el-table-column
+                        prop="orderId"
+                        label="商户订单号">
+                </el-table-column>
+                <el-table-column
+                        prop="appId"
+                        label="商户Id">
+                </el-table-column>
+                <el-table-column
+                        prop="amount"
+                        label="金额">
+                </el-table-column>
+                <el-table-column
+                        prop="platformFee"
+                        label="商户手续费">
+                </el-table-column>
+                <el-table-column
+                        prop="type"
+                        label="充值类型">
+                </el-table-column>
+                <el-table-column
+                        label="订单状态">
+                    <template slot-scope="scope">
+                    <span v-if="scope.row.status  === '成功'"
+                          style="color:red;font-weight: bolder">{{scope.row.status}}</span>
+                        <span v-else style="color:#606972">{{scope.row.status}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                        prop="syncCnt"
+                        label="回调状态">
+                </el-table-column>
+                <el-table-column
+                        prop="createTime"
+                        label="创建时间">
+                </el-table-column>
+                <el-table-column
+                        prop="payTime"
+                        label="支付时间">
+                </el-table-column>
+                <el-table-column
+                        prop="clabe"
+                        label="clabe"
+                        v-if="cpinfo.country === 'MEX'"
+                ></el-table-column>
+                <el-table-column
+                        prop="rastreo"
+                        label="Clave De Rastreo"
+                        v-if="cpinfo.country === 'MEX'"
+                >
+                </el-table-column>
+                <el-table-column label="操作" width="300">
+                    <template slot-scope="scope">
+                        <el-button v-if="(scope.row.status === '待处理' && scope.row.payTypeId === 101)" type="danger"
+                                   round
+                                   size="mini"
+                                   @click="openMatchUtrDrawer(scope)">人工补单
+                        </el-button>
+                    </template>
+                </el-table-column>
+
+            </el-table>
+        </div>
+        <div style="text-align: center;margin-top:5px;">
+            <el-pagination
+                    background
+                    layout="total, prev, pager, next"
+                    :total="total" :current-page="searchForm.page" @current-change="pageChange">
+            </el-pagination>
+        </div>
+        <el-drawer
+                :visible.sync="matchUtrDrawerVisible"
+                :direction="direction"
+                :before-close="handleClose"
+                :close-on-click-modal="false"
+                :show-close="false"
+                custom-class="demo-drawer"
+                style="overflow-y: auto"
+                size="50%">
+            <div class="" style="padding: 20px">
+                <el-form>
+                    <el-form-item label="UTR" :label-width="formLabelWidth">
+                        <el-input v-model="matchUtrForm.rastreo" autocomplete="off"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div class="demo-drawer__footer">
+                    <el-button :disable="matching" type="success" @click="matchUtr()">{{matching
+                        ?
+                        '匹配中...' : '确认'}}
+                    </el-button>
+                    <el-button @click="closeMatchUtrDrawer()">取 消</el-button>
+                </div>
+            </div>
+        </el-drawer>
+    </template>
+</div>
+</body>
+<script src="../merchants/vue/vue.js"></script>
+<script src="../custom/custom.js"></script>
+<!-- import Vue before Element -->
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/qs.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                fullscreenLoading: false,
+                centerDialogVisible: false,
+                innerVisible: false,
+                sendNotifyDrawerVisable: false,
+                direction: 'rtl',
+                password: '',
+                verifyCode: '',
+                notifyId: '',
+                early: [],
+                countryOptions: [],
+                payTypeOptions: [],
+                searchFormOri: {},
+                searchForm: {
+                    id: '',
+                    orderId: '',
+                    type: '',
+                    status: '',
+                    syncCnt: '',
+                    startCreateTime: '',
+                    endCreateTime: '',
+                    startPayTime: '',
+                    endPayTime: '',
+                    clabe: '',
+                    rastreo: '',
+                    pix_key: '',
+                    document_id: '',
+                    amount: '',
+                    page: 1,
+                    limit: 10,
+                    rowIndex: 0
+                },
+                dialog: {
+                    isInsert: true,
+                    visible: false,
+                    formLabelWidth: '150px',
+                    form: {},
+                    settings: {
+                        visible: false,
+                        activeName: 'first',
+                        userName: '',
+                        appId: 0,
+                        payFix: 0,
+                        payRate: 0,
+                        withdrawFix: 0,
+                        withdrawRate: 0,
+                        balanceForm: {
+                            password: '',
+                            Verifycode: '',
+                            remain: 0,
+                            Notes: ''
+                        }
+                    },
+                    rules: {
+                        UserName: [
+                            {required: true, message: '请输入账号名称', trigger: 'blur'},
+                            {min: 3, max: 50, message: '长度在 3 到 50 个字符', trigger: 'blur'}
+                        ]
+                    },
+                },
+                tableData: [],
+                total: 0,
+                dateStart: '', // 起运日期
+                dateEnd: '', // 送达日期
+                pickerOptionsStart: {},
+                pickerOptionsEnd: {
+                    disabledDate(time) {
+                        if (this.dateStart) {
+                            // 让用户可以选择开始结束同一天
+                            var startTime = new Date(this.dateStart).valueOf() - 8.64e7 + 1;
+                        } else {
+                            var startTime = Date.now() - 8.64e7;
+                        }
+                        return time && time.valueOf() < startTime
+                    }
+                },
+                notifyBtnSwitch: 'disabled',
+                sendNotifyMsgForm: {
+                    id: '',
+                    url: '',
+                    notifyData: '',
+                    notifyResp: '',
+                    notifyAnalyze: ''
+                },
+                formLabelWidth: 120,
+                sending: false,
+                cpinfo: {
+                    country: ''
+                },
+                matchUtrDrawerVisible: false,
+                matchUtrForm: {
+                    id: '',
+                    rastreo: ''
+                },
+
+            }
+        },
+        created() {
+            this.queryAllPayLog()
+            this.initCpinfo()
+        },
+        methods: {
+            queryAllPayLog() {
+                var that = this
+                this.fullscreenLoading = true
+                this.searchForm.startCreateTime = this.early === [] ? [] : this.early[0]
+                this.searchForm.endCreateTime = this.early === [] ? [] : this.early[1]
+                return new Promise(resolve => {
+                    axios({
+                        method: 'post',
+                        url: '../paylog/queryPayLogPageList',
+                        data: Qs.stringify(this.searchForm)
+                    }).then(function (response) {
+                        if (response.data.code === 0) {
+
+                            var list = response.data.data.list
+                            var statictics = response.data.data.statictics
+
+
+                            var tableData = []
+                            for (var paylog of list) {
+
+                                paylog.type = formatPayType(paylog)
+
+                                paylog.amount = formatAmount(paylog.amount)
+                                paylog.platformFee = formatAmount(paylog.platformFee)
+
+                                var status = paylog.status
+                                status = status === 1 ? '成功' : status === 0 ? '待处理' : '失败'
+                                paylog.status = status
+
+                                var syncCnt = paylog.syncCnt
+                                syncCnt = syncCnt === 1 ? '同步成功' : syncCnt === 0 ? '未回调' : '同步失败'
+                                paylog.syncCnt = syncCnt
+
+                                var validStatus = paylog.validStatus
+                                validStatus = validStatus === 1 ? '已结算' : '未结算'
+                                paylog.validStatus = validStatus
+
+                                paylog.createTime = dateFormate(paylog.createTime)
+                                paylog.payTime = dateFormate(paylog.payTime)
+
+                                tableData.push(paylog)
+                            }
+                            that.tableData = tableData
+                            that.total = statictics.allPayNum
+                            that.fullscreenLoading = false
+                        }
+                    })
+
+                });
+            },
+            queryCountryPageList() {
+                let that = this
+                return new Promise(resolve => {
+                    axios({
+                        method: 'post',
+                        url: '../dictionary/allDictionaryByType.action',
+                        data: "type=country"
+                    }).then(function (res) {
+                        if (res.data.code === 0) {
+                            that.countryOptions = []
+                            res.data.data.forEach((item, index) => {
+                                that.countryOptions.push(
+                                    {
+                                        "label": item.name,
+                                        "value": item.value
+                                    }
+                                )
+                            })
+                        }
+                    })
+                })
+            },
+            search() {
+                this.searchForm.page = 1
+                this.queryAllPayLog()
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields()
+                this.early = []
+            },
+            pageChange(cur) {
+                this.searchForm.page = cur
+                this.queryAllPayLog()
+            },
+            closeDialog() {
+                this.dialog.visible = false
+                this.dialog.isInsert = true
+                this.commonCloseDialog(this.dialog.form, 'ruleForm')
+            },
+            openSendNotifyMsgDrawer(data) {
+                this.sendNotifyMsgForm.id = ''
+                this.sendNotifyMsgForm.id = data.id
+                this.sendNotifyMsgForm.url = ''
+                this.sendNotifyMsgForm.url = data.notifyUrl
+                this.sendNotifyMsgForm.notifyData = ''
+                this.sendNotifyMsgForm.notifyResp = ''
+                this.sendNotifyMsgForm.notifyAnalyze = ''
+                this.sendNotifyDrawerVisable = true
+            },
+            sendNotifyMsg(id) {
+                var that = this
+                that.sending = true
+                return new Promise(resolve => {
+                    axios({
+                        method: 'post',
+                        url: '../paylog/sendNotifyMsg.action',
+                        data: 'id=' + id
+                    }).then(function (response) {
+                        if (response.data.code === 0 || response.data.code === -1) {
+                            var data = JSON.parse(response.data.data)
+                            that.sendNotifyMsgForm.notifyData = data.notifyData
+                            that.sendNotifyMsgForm.notifyResp = data.notifyResp
+                            console.log(encodeURIComponent(data.notifyResp))
+                            console.log(encodeURIComponent(that.sendNotifyMsgForm.notifyResp))
+                            console.log(encodeURIComponent('SUCCESS'))
+                            if (data.notifyResp + '' === 'SUCCESS') {
+                                that.sendNotifyMsgForm.notifyAnalyze = '回调通知发送成功，收到对方处理完回调数据响应，同步成功。'
+                                that.queryAllPayLog()
+                            } else {
+                                that.sendNotifyMsgForm.notifyAnalyze = '回调异常，对方响应错误。错误可能原因：' +
+                                    '1.对方收到回调数据，对方未处理或处理完数据没有返回大写"SUCCESS"。' +
+                                    '2.回调地址错误，对方未收到回调数据。'
+                            }
+
+
+                        }
+                        that.sending = false
+                    })
+
+                });
+            },
+            handleClose(done) {
+                done();
+            },
+            cancelNotifyMsgDrawer() {
+                this.sendNotifyDrawerVisable = false
+                this.sendNotifyMsgForm.notifyData = ''
+                this.sendNotifyMsgForm.notifyResp = ''
+                this.sendNotifyMsgForm.notifyAnalyze = ''
+            },
+            initCpinfo() {
+                var data = JSON.parse(sessionStorage.getItem("cpinfo"))
+                this.cpinfo.country = data.country
+            },
+            exportPayLog() {
+                //编码防止中文字符乱码
+                window.location.href = encodeURI("/paylog/exportPayLog?id=" + this.searchForm.id + "&orderId=" + this.searchForm.orderId + "&type=" + this.searchForm.type + "&status=" + this.searchForm.status + "&syncCnt=" + this.searchForm.syncCnt + "&startCreateTime=" + (this.searchForm.startCreateTime === undefined ? "" : this.searchForm.startCreateTime) + "&endCreateTime=" + (this.searchForm.endCreateTime === undefined ? "" : this.searchForm.endCreateTime) + "&startPayTime=" + (this.searchForm.startPayTime === undefined ? "" : this.searchForm.startPayTime) + "&endPayTime=" + (this.searchForm.endPayTime === undefined ? "" : this.searchForm.endPayTime) + "&clabe=" + this.searchForm.clabe + "&pix_key=" + this.searchForm.pix_key + "&document_id=" + this.searchForm.document_id + "&amount=" + this.searchForm.amount)
+            },
+            openMatchUtrDrawer(scope) {
+                const currency = scope.row.currency
+                if (currency === 'INR') {
+                    this.matchUtrForm.id = scope.row.id
+
+                    this.matchUtrDrawerVisible = true
+                }
+            },
+            closeMatchUtrDrawer() {
+                this.matchUtrForm.id = ''
+                this.matchUtrForm.utr = ''
+                this.matchUtrDrawerVisible = false
+            },
+            matchUtr() {
+                const that = this
+                axios({
+                    method: 'post',
+                    url: '/paylog/matchUtr',
+                    data: Qs.stringify(that.matchUtrForm)
+                }).then((response) => {
+                    const data = response.data
+                    const code = data.code
+                    if (code === 0) {
+                        that.closeMatchUtrDrawer()
+                        that.queryAllPayLog()
+                    }
+                    that.$message(data.msg)
+                })
+
+            }
+        }
+    })
+</script>
+<style lang="less">
+    .el-drawer.rtl {
+        overflow: scroll;
+    }
+
+    .el-textarea .el-textarea__inner {
+        resize: none;
+    }
+
+    .el-row {
+        margin-bottom: 20px;
+
+    &
+    :last-child {
+        margin-bottom: 0;
+    }
+
+    }
+    .el-col {
+        border-radius: 4px;
+    }
+
+    .bg-purple-light {
+        background: #e5e9f2;
+    }
+
+    .grid-content {
+        border-radius: 4px;
+        min-height: 36px;
+    }
+
+    .row-bg {
+        padding: 10px 0;
+        background-color: #f9fafc;
+    }
+
+</style>
+</html>

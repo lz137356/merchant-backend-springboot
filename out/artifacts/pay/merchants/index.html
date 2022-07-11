@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>TSPay</title>
+    <link rel="stylesheet" href="css/custom.css">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+<div id="app">
+    <template>
+        <el-container>
+            <!--            <div c class="aside-wrap" :class="[isCollapse ? 'shou' : 'xian']">-->
+            <!--                -->
+            <!--            </div>-->
+            <el-aside width="17rem" ref="el-aside">
+                <div class="top-info" v-if="!isCollapse">
+                    <el-row :span="24">
+                        <el-col :span="12">
+                            <div class="top-info__image">
+                                <img src="../img/top1.png" style="width: 6.0rem;border-radius: 3rem" alt="">
+
+                            </div>
+                        </el-col>
+                        <el-col :span="12">
+                            <table style="width: 100%;height: 100%;text-align: center;margin-top: 26px;margin-left: -20px">
+                                <tr>
+                                    <td>
+                                                <span class="pay_name">
+                                            TSPay
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                                <span class="pay_name">
+
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </el-col>
+                    </el-row>
+                </div>
+
+                <el-menu :collapse-transition="false" default-active="1" :collapse="isCollapse">
+                    <el-menu-item index="0" @click="getIframeSrc('./home.html')">
+                        <i class="el-icon-menu"></i>
+                        <span slot="title">首页</span>
+                    </el-menu-item>
+
+                    <el-submenu class="submenu-hover" v-for="item in menuList" :index="item.permissName"
+                                :key="item.id" d>
+                        <template slot="title">
+                            <i slot="title" :class="item.pType"></i>
+                            <span slot="title">{{item.permissName}}</span>
+                        </template>
+                        <el-menu-item-group>
+                            <el-menu-item v-for="itemson in item.children" :index="itemson.permissName"
+                                          :key="itemson.id" @click="getIframeSrc(itemson.pValue)">
+                                {{itemson.permissName}}
+                            </el-menu-item>
+                        </el-menu-item-group>
+                    </el-submenu>
+                </el-menu>
+            </el-aside>
+            <el-container>
+                <el-header>
+                    <div class="page-nav-header">
+                        <div class="header__left" @click="ShowNavMenu">
+                            <i v-if="isCollapse" class="el-icon-s-unfold"></i>
+                            <i v-else class="el-icon-s-fold"></i>
+                        </div>
+                        <div class="header__right">
+                            <el-dropdown>
+                                <div style="cursor: pointer" class="header__right-info">
+                                    <i class="el-icon-user-solid"></i>
+                                    <label id="username">{{cpinfo.username}}</label>
+                                    <i class="el-icon-arrow-down el-icon--right"></i>
+                                </div>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item @click.native="checkoutLogin">退出登录</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </div>
+<!--                        <div style="float: right;width: 100%;background-color: rgb(245,245,245);margin-bottom: 1rem">-->
+<!--                            <marquee style="width: 100%;height: 2.0rem;float: right;line-height: 2.0rem" direction="left"-->
+<!--                                     behavior="scroll" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();"-->
+<!--                                     scrolldelay="0" loop="-1" width="211" height="125">-->
+<!--                                <span style="font-family: Arial">内充下发请联系：@kimkumma   @Wingtopstand</span>-->
+<!--                            </marquee>-->
+<!--                        </div>-->
+                    </div>
+                </el-header>
+                <el-main class="el-main" ref="elmain">
+                    <iframe style="width: 101%;height: 100%;overflow-x: hidden;overflow-y: hidden;border-style: none"
+                            :src="iframe" ref="iframe" id="iframe">
+
+                    </iframe>
+                </el-main>
+            </el-container>
+        </el-container>
+    </template>
+</div>
+</body>
+<script src="../merchants/vue/vue.js"></script>
+<!-- import Vue before Element -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<!-- import JavaScript -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script src="./js/axios.min.js"></script>
+<script src="./js/qs.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        name: "Index",
+
+        data: {
+            fullscreenLoading: true,
+            editableTabsValue: 0,
+            clientHeight: 0,
+            tabIndex: 2,
+            isCollapse: false,
+            iframe: 'home.html',
+            menuList: [
+                {
+                    id: 1,
+                    permissName: "记录查询",
+                    pType: "el-icon-s-order",
+                    pValue: null,
+                    pLevel: 0,
+                    upId: 0,
+                    upName: null,
+                    sort: 1,
+                    createTime: "Jan 15, 2021 9:51:49 AM",
+                    children: [
+                        {
+                            id: 11,
+                            permissName: "交易记录",
+                            pType: null,
+                            pValue: "./payLogList.html?v=1.0",
+                            pLevel: 0,
+                            upId: 1,
+                            upName: null,
+                            sort: 1,
+                            createTime: "Jan 15, 2021 9:55:01 AM",
+                            children: null
+                        },
+                        {
+                            id: 12,
+                            permissName: "提现记录",
+                            pType: null,
+                            pValue: "./withdrawLogList.html?v=1.0",
+                            pLevel: 0,
+                            upId: 1,
+                            upName: null,
+                            sort: 2,
+                            createTime: "Jan 15, 2021 9:55:01 AM",
+                            children: null
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    permissName: "财务管理",
+                    pType: "el-icon-s-order",
+                    pValue: null,
+                    pLevel: 0,
+                    upId: 0,
+                    upName: null,
+                    sort: 1,
+                    createTime: "Jan 15, 2021 9:51:49 AM",
+                    children: [
+                        {
+                            id: 11,
+                            permissName: "资金记录",
+                            pType: null,
+                            pValue: "./moneyLogList.html?v=1.0",
+                            pLevel: 0,
+                            upId: 1,
+                            upName: null,
+                            sort: 1,
+                            createTime: "Jan 15, 2021 9:55:01 AM",
+                            children: null
+                        }
+                    ]
+                }
+            ],
+            cpinfo: {
+                username: ''
+            }
+        },
+        watch: {
+            // 如果 `clientHeight` 发生改变，这个函数就会运行
+            clientHeight: function () {
+                this.changeFixed(this.clientHeight)
+            }
+        },
+        mounted() {
+            let that = this
+            // 获取浏览器可视区域高度
+            that.clientHeight = `${document.documentElement.clientHeight}`          //document.body.clientWidth;
+            window.onresize = function temp() {
+                that.clientHeight = `${document.documentElement.clientHeight}`;
+            }
+        },
+        methods: {
+            changeFixed(clientHeight) {                        //动态修改样式
+                this.$refs['elmain'].$el.style.height = clientHeight + 'px';
+                this.$refs['elaside'].$el.style.height = clientHeight + 'px';
+
+            },
+            ShowNavMenu() {
+                this.isCollapse = !this.isCollapse
+            },
+
+            getIframeSrc(e) {
+                this.iframe = e
+            },
+            checkoutLogin() {
+                window.location.href='/login.jsp'
+            },
+            setIframeHeight() {
+                var iframe = this.$refs["iframe"]
+                var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+                if (iframeWin.document.body) {
+                    iframe.height = iframeWin.document.clientHeight;
+                }
+            },
+            getCpInfo() {
+                var that = this
+                return new Promise(resolve => {
+                    axios({
+                        method: 'post',
+                        url: '../cpinfo/getSessionCpInfo'
+                    }).then(function (response) {
+                        if (response.data.code === 0) {
+                            var data = response.data.data
+                            that.cpinfo.username = data.userName
+                            sessionStorage.setItem("cpinfo",JSON.stringify(data))
+                        }
+                    })
+
+                });
+            },
+
+        },
+        created() {
+            this.$nextTick(() => {
+                this.setIframeHeight()
+            })
+            this.getCpInfo()
+        }
+    });
+</script>
+<style>
+    html, body, #app, .el-container {
+        border-style: none;
+        /*设置内部填充为0，几个布局元素之间没有间距*/
+        padding: 0;
+        /*外部间距也是如此设置*/
+        margin: 0;
+        /*统一设置高度为100%*/
+        height: 100%;
+    }
+
+    body {
+        overflow: hidden;
+    }
+
+    html {
+        overflow: auto;
+    }
+
+</style>
+</html>

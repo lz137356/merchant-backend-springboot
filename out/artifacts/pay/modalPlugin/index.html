@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>模态框</title>
+  <link rel="stylesheet" href="icon/iconfont.css">
+  <link rel="stylesheet" href="modal.css">
+</head>
+
+<body>
+  <button class="btn">点击出现弹框</button>
+  <button class="btn1">点击出现弹框</button>
+  <script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+  <script src="./modal.js"></script>
+  <script>
+    $(function () {
+      var mModal1 = new mModal({
+        content: "<p>你好</p><p>啊啊啊啊</p>",
+        confirm: function () {
+          alert("确定弹框1");
+          mModal1.close();
+        },
+        cancel: function () {
+          alert("取消弹框1")
+        }
+      });
+      var mModal2 = new mModal({
+        confirm: function () {
+          alert("确定弹框2");
+          mModal2.close();
+        },
+        cancel: function () {
+          alert("取消弹框2")
+        }
+      });
+      $(".btn").on("click", function () {
+        mModal1.renderDom();
+      })
+      $(".btn1").on("click", function () {
+        mModal2.renderDom();
+      })
+    })
+  </script>
+</body>
+
+</html>
