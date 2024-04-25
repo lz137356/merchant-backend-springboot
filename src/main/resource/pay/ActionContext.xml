@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+	
+	<bean id="userAction" class="com.lxtx.pay.action.UserAction" scope="prototype">
+        <property name="userHandler" ref="userHandler"/>
+    </bean>
+
+	<bean id="paytypeAction" class="com.lxtx.pay.action.PayTypeAction" scope="prototype">
+		<property name="payTypeHandler" ref="payTypeHandler"/>
+	</bean>
+	<bean id="withdrawtypeAction" class="com.lxtx.pay.action.WithdrawTypeAction" scope="prototype">
+		<property name="withdrawTypeHandler" ref="withdrawTypeHandler"/>
+	</bean>
+
+	<bean id="paylogAction" class="com.lxtx.pay.action.PaylogAction" scope="prototype">
+		<property name="paylogHandler" ref="paylogHandler"/>
+		<property name="paylogHelper" ref="paylogHelper"/>
+	</bean>
+	<bean id="withdrawlogAction" class="com.lxtx.pay.action.WithdrawlogAction" scope="prototype">
+		<property name="withdrawlogHandler" ref="withdrawlogHandler"/>
+
+	</bean>
+	<bean id="withdraworderAction" class="com.lxtx.pay.action.WithdrawOrderAction" scope="prototype">
+		<property name="withdraworderHandler" ref="withdraworderHandler"/>
+		<property name="cpInfoHandler" ref="cpInfoHandler"/>
+		<property name="withdrawTypeHandler" ref="withdrawTypeHandler"/>
+		<property name="cpstatownHandler" ref="cpstatownHandler"/>
+	</bean>
+	<bean id="cpInfoAction" class="com.lxtx.pay.action.CpInfoAction" scope="prototype">
+		<property name="cpInfoHandler" ref="cpInfoHandler"/>
+	</bean>
+	<bean id="cpstatAction" class="com.lxtx.pay.action.CpstatAction" scope="prototype">
+		<property name="cpInfoHandler" ref="cpInfoHandler"/>
+	</bean>
+
+	<bean id="paystatAction" class="com.lxtx.pay.action.PaystatAction" scope="prototype">
+		<property name="paystatHandler" ref="paystatHandler"/>
+	</bean>
+	<bean id="withdrawstatAction" class="com.lxtx.pay.action.WithdrawstatAction" scope="prototype">
+		<property name="withdrawstatHandler" ref="withdrawstatHandler"/>
+	</bean>
+	<bean id="agentAction" class="com.lxtx.pay.action.AgentAction" scope="prototype">
+		<property name="agentHandler" ref="agentHandler"/>
+	</bean>
+	<bean id="cloudUserBankAction" class="com.lxtx.pay.action.CpBankAction" scope="prototype">
+		<property name="cpBankHandler" ref="cpBankHandler"/>
+	</bean>
+	<bean id="moneylogAction" class="com.lxtx.pay.action.MoneylogAction" scope="prototype">
+		<property name="moneylogHandler" ref="moneylogHandler"/>
+	</bean>
+	<bean id="loginAction" class="com.lxtx.pay.action.LoginAction" scope="prototype">
+		<property name="cpInfoHandler" ref="cpInfoHandler"/>
+		<property name="userHandler" ref="userHandler"/>
+		<property name="agentHandler" ref="agentHandler"/>
+	</bean>
+
+
+
+</beans>

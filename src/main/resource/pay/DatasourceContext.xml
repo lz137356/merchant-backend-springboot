@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+    <bean id="pay_dataSource" class="org.springframework.jndi.JndiObjectFactoryBean" >
+        <property name="jndiName" value="java:comp/env/jdbc/Service_Mysql_paycenter_vboot"/>
+    </bean>
+<!--    <bean id="pay_dataSource"-->
+<!--          class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+<!--        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>-->
+<!--        <property name="url" value="jdbc:mysql://tkpay-mysql.csv1uzmwdsbd.ap-south-1.rds.amazonaws.com:3306/vboot_java?useUnicode=true&amp;characterEncoding=GBK"/>-->
+<!--        <property name="username" value="admin01"/>-->
+<!--        <property name="password" value="F8eDg2H5kOp7rJ9qA1mT4wX6cV3zY0bN"/>-->
+<!--    </bean>-->
+
+<!--    <bean id="pay_dataSource"-->
+<!--          class="org.springframework.jdbc.datasource.DriverManagerDataSource">-->
+<!--        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>-->
+<!--        <property name="url" value="jdbc:mysql://tkpay-mysql.csv1uzmwdsbd.ap-south-1.rds.amazonaws.com:3306/vboot-java?useUnicode=true&amp;characterEncoding=GBK"/>-->
+<!--        <property name="username" value="admin01"/>-->
+<!--        <property name="password" value="F8eDg2H5kOp7rJ9qA1mT4wX6cV3zY0bN"/>-->
+<!--    </bean>-->
+
+</beans>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="log" type="com.lxtx.pay.pojo.LoginLog"/>
+
+
+    <insert id="LoginLog.insert" parameterClass="log">
+        insert into loginlog(RemoteIp,AppId,LogType,Details,OperationTarget,CreateTime) values (#RemoteIp#,#AppId#,#LogType#,#Details#,#OperationTarget#,now())
+    </insert>
+    <select id="LoginLog.findByPage" resultClass="com.lxtx.pay.pojo.LoginLog">
+        select * from loginlog where AppId = #AppId# order by Id desc
+        <isNotEmpty property="rowIndex">
+            limit $rowIndex$,$limit$
+        </isNotEmpty>
+    </select>
+    <select id="LoginLog.countTotal" resultClass="int">
+        select count(*) from loginlog where AppId = #AppId#
+    </select>
+</sqlMap>

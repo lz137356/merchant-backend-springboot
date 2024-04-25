@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+
+    <typeAlias alias="cpstatown" type="com.lxtx.pay.pojo.CpstatOwn"/>
+
+
+    <select id="CpstatOwn.queryByDates" resultClass="cpstatown" parameterClass="java.util.Map">
+        select sum(WithdrawAmount) as  WithdrawAmount,
+               sum(WithdrawFee) as  WithdrawFee
+        from cpstatown
+        <dynamic prepend="where">
+            StatDay=#statday#
+        </dynamic>
+    </select>
+
+    
+    
+    <select id="CpstatOwn.selectOne" resultClass="cpstatown" parameterClass="java.util.Map">
+        select * from cpstatown where StatDay=#statday#
+    </select>
+
+    <insert id="CpstatOwn.insert" parameterClass="cpstatown">
+        insert into cpstatown (Id,AppId, StatDay, PayAmount, PayFee, WithdrawAmount, WithdrawFee,TodayWithdrawNum)
+        VALUES (null,#AppId#,#StatDay#,#PayAmount#,#PayFee#,#WithdrawAmount#,#WithdrawFee#,#TodayWithdrawNum#)
+    </insert>
+
+    <update id="CpstatOwn.update" parameterClass="cpstatown">
+        update cpstatown set  WithdrawAmount=#WithdrawAmount#,
+                             WithdrawFee=#WithdrawFee#,
+                             TodayWithdrawNum=#TodayWithdrawNum#
+where Id=#id#
+
+    </update>
+
+</sqlMap>
