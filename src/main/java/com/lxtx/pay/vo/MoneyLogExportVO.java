@@ -31,12 +31,6 @@ public class MoneyLogExportVO {
 
     @ExcelHeader(value = "关联单号")
     private String orderId;
-//
-//    @ExcelHeader(value = "详情")
-//    private String details;
-
     @ExcelHeader(value = "记账时间")
     private String createTime;
-    @ExcelHeader(value = "支付时间")
-    private String PayTime;
 }

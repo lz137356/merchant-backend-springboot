@@ -76,7 +76,7 @@
 
     <select id="Moneylog.exportExcelMoneyLogList" resultClass="com.lxtx.pay.vo.MoneyLogExportVO"
             parameterClass="com.lxtx.pay.dto.MoneyLogReqDTO">
-        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid,PayTime
+        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid
         from moneylog m
         where AppId = #appId#
         <isNotEmpty property="id" prepend="and">

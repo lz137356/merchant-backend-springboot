@@ -308,10 +308,10 @@
             p.CreateTime &lt;= #endCreateTime#
         </isNotEmpty>
         <isNotEmpty prepend="and" property="startPayTime">
-            p.CreateTime &gt;= #startPayTime#
+            p.PayTime &gt;= #startPayTime#
         </isNotEmpty>
         <isNotEmpty prepend="and" property="endPayTime">
-            p.CreateTime &lt;= #endPayTime#
+            p.PayTime &lt;= #endPayTime#
         </isNotEmpty>
 
     </select>
