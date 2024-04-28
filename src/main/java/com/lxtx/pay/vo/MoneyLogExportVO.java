@@ -37,5 +37,6 @@ public class MoneyLogExportVO {
 
     @ExcelHeader(value = "记账时间")
     private String createTime;
-
+    @ExcelHeader(value = "支付时间")
+    private String PayTime;
 }
