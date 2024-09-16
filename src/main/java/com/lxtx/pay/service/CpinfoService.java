@@ -18,7 +18,11 @@ public interface CpinfoService {
 
     CpInfoSettingVO createCpInfoSecret(HttpServletRequest request);
 
+    JSONObject createCpInfoSecret(CpinfoReqDTO reqDTO);
+
     int login(HttpServletRequest request, CpinfoReqDTO reqDTO);
+
+    JSONObject loginV2(HttpServletRequest request, CpinfoReqDTO reqDTO);
 
     void logout(HttpServletRequest request, HttpServletResponse response);
 

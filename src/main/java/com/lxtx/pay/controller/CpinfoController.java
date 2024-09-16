@@ -13,6 +13,7 @@ import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -40,10 +41,20 @@ public class CpinfoController {
         }
     }
 
+//    @RequestMapping("/createGoogleSecret")
+//    @ResponseBody
+//    public JSONObject createGoogleSecret(HttpServletRequest request) {
+//        CpInfoSettingVO cpInfoSecret = cpinfoService.createCpInfoSecret(request);
+//        if (cpInfoSecret != null) {
+//            return Result.success(cpInfoSecret);
+//        }
+//        return Result.fail("生成谷歌秘钥失败");
+//    }
+
     @RequestMapping("/createGoogleSecret")
     @ResponseBody
-    public JSONObject createGoogleSecret(HttpServletRequest request) {
-        CpInfoSettingVO cpInfoSecret = cpinfoService.createCpInfoSecret(request);
+    public JSONObject createGoogleSecret(CpinfoReqDTO reqDTO) {
+        JSONObject cpInfoSecret = cpinfoService.createCpInfoSecret(reqDTO);
         if (cpInfoSecret != null) {
             return Result.success(cpInfoSecret);
         }
@@ -53,17 +64,7 @@ public class CpinfoController {
     @RequestMapping("/login")
     @ResponseBody
     public JSONObject login(HttpServletRequest request, HttpServletResponse response, CpinfoReqDTO reqDTO) throws IOException {
-        int login = cpinfoService.login(request, reqDTO);
-
-
-        if (login > 0) {
-            return Result.success("登陆成功", request.getSession().getId());
-        } else if (login == -2) {
-            return Result.fail("谷歌验证码验证失败");
-        }
-        else {
-            return Result.fail("登陆失败");
-        }
+        return cpinfoService.loginV2(request, reqDTO);
     }
 
     @RequestMapping("/logout")

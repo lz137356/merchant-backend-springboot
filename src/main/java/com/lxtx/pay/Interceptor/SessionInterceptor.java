@@ -12,19 +12,6 @@ public class SessionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
-
-        if (cpInfo == null) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("code", 444);
-            jsonObject.put("msg", "login error");
-
-            response.setContentType("application/json;charset=utf-8");
-            response.getWriter().print(jsonObject);
-            return false;
-        }
-
-
         String requestURI = request.getRequestURI();
 
         // 判断请求路径是否为 /api/register/register
@@ -46,6 +33,22 @@ public class SessionInterceptor implements HandlerInterceptor {
         if (requestURI.contains("/withdrawlog/exportWithdrawLog")) {
             // 放行
             return true;
+        }
+
+        if (requestURI.contains("/cpinfo/createGoogleSecret")) {
+            // 放行
+            return true;
+        }
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+
+        if (cpInfo == null) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code", 444);
+            jsonObject.put("msg", "login error");
+
+            response.setContentType("application/json;charset=utf-8");
+            response.getWriter().print(jsonObject);
+            return false;
         }
 
 

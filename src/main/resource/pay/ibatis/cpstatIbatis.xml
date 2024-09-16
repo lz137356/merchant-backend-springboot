@@ -19,7 +19,7 @@
     </resultMap>
 
     <select id="Cpstat.queryAllByAppid" resultClass="cpstat" parameterClass="java.util.Map">
-        select * from Cpstat
+        select * from cpstat
         <dynamic prepend="where">
             <isNotEmpty prepend="and" property="appId">
                 AppId=#appId#
@@ -41,7 +41,7 @@
         </isNotEmpty>
     </select>
     <select id="Cpstat.queryAllByAppidcount" resultClass="int" parameterClass="java.util.Map">
-        select count(Id) from Cpstat
+        select count(Id) from cpstat
         <dynamic prepend="where">
             <isNotEmpty prepend="and" property="appId">
                 AppId=#appId#

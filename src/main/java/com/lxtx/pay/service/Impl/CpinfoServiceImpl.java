@@ -78,6 +78,80 @@ public class CpinfoServiceImpl implements CpinfoService {
     }
 
     @Override
+    public JSONObject loginV2(HttpServletRequest request, CpinfoReqDTO reqDTO) {
+        JSONObject response = new JSONObject();
+
+
+        String username = reqDTO.getUsername();
+        String password = reqDTO.getPassword();
+
+        CpInfo cpInfo = cpInfoHandler.queryOne(reqDTO);
+        if (cpInfo == null) {
+
+            // 登录账号不存在
+            response.put("code", -1 );
+            response.put("msg", "登录账号不存在");
+            return response;
+        }
+
+        boolean isTrue = cpInfo.getUserPass().equals(password);
+        if (!isTrue) {
+
+            // 密码错误
+            response.put("code", -1 );
+            response.put("msg", "密码错误");
+            return response;
+        }
+
+        String googleSecret = cpInfo.getGoogleSecret();
+        if (StringUtils.isNotEmpty(googleSecret)) {
+            if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
+
+                // 请输入谷歌验证码
+                response.put("code", -1 );
+                response.put("msg", "请输入谷歌验证码");
+                return response;
+            }
+
+            GoogleAuthenticator ga = new GoogleAuthenticator();
+            boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
+            if (!b) {
+
+                // 谷歌验证码错误
+                response.put("code", -1 );
+                response.put("msg", "谷歌验证码校验错误");
+                return response;
+            }
+
+            // 密码和谷歌验证码正确
+            response.put("code", 1 );
+            response.put("msg", "密码和谷歌验证码正确");
+
+            LoginLog loginLog = new LoginLog();
+            loginLog.setAppId(cpInfo.getAppId());
+            loginLog.setLogType("登录");
+            loginLog.setDetails("登录");
+            loginLog.setOperationTarget("盘口");
+            loginLog.setRemoteIp(CommonUtil.getRemortIP(request));
+            loginLogHandler.add(loginLog);
+            cpInfo.setSessionId(request.getSession().getId());
+
+            response.put("data", request.getSession().getId());
+
+            cpInfoHandler.setSessionId(cpInfo);
+
+            request.getSession().setAttribute("cpInfo", cpInfo);
+            request.getSession().setMaxInactiveInterval(6 * 3600);
+
+            return response;
+        }
+
+        response.put("code", -2 );
+        response.put("msg", "首次登录请生成并绑定谷歌秘钥");
+        return response;
+    }
+
+    @Override
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         cpInfo.setSessionId("");
@@ -198,6 +272,33 @@ public class CpinfoServiceImpl implements CpinfoService {
             CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
             cpInfoSettingVO.setGoogleSecret(secretKey);
             return cpInfoSettingVO;
+        }
+        return null;
+    }
+
+    @Override
+    public JSONObject createCpInfoSecret(CpinfoReqDTO reqDTO) {
+        String username = reqDTO.getUsername();
+        String password = reqDTO.getPassword();
+
+        CpInfo cpInfo = cpInfoHandler.queryOne(reqDTO);
+        if (cpInfo == null) {
+            return null;
+        }
+
+        String userPass = cpInfo.getUserPass();
+        if (userPass.equals(password) ) {
+            String secretKey = GoogleAuthenticator.generateSecretKey();
+            CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
+            cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
+            cpInfoSettingReqDTO.setGoogleSecret(secretKey + "");
+            int i = cpInfoHandler.updateCpInfoGoogleSecret(cpInfoSettingReqDTO);
+            if (i > 0) {
+                JSONObject data = new JSONObject();
+                data.put("googleSecret",secretKey);
+                data.put("qrBarcode","otpauth://totp/goopay?secret="+secretKey+"&issuer=goopay.online");
+                return data;
+            }
         }
         return null;
     }
