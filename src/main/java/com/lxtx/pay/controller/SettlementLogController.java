@@ -22,7 +22,12 @@ public class SettlementLogController {
     @RequestMapping("/settlement")
     public JSONObject settlement(SettlementLogReqDTO reqDTO){
         int i = settlementLogService.addOneSettlementLog(reqDTO);
-
+        if(i==99){
+            return Result.fail("谷歌密钥未设置，请先设置后重新登录再进行操作。");
+        }
+        if(i==-2){
+            return Result.fail("校验异常,错误码-2");
+        }
         if (i>0){
             return Result.success("已提交",null);
         }

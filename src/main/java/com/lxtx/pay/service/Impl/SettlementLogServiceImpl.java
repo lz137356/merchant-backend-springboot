@@ -8,8 +8,10 @@ import com.lxtx.pay.pojo.CpInfo;
 import com.lxtx.pay.pojo.SettlementLog;
 import com.lxtx.pay.service.SettlementLogService;
 import com.lxtx.pay.utils.CommonUtil;
+import com.lxtx.pay.utils.GoogleAuthenticator;
 import com.lxtx.pay.vo.SettlementLogStatisticsVO;
 import com.lxtx.pay.vo.SettlementLogVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +36,15 @@ public class SettlementLogServiceImpl implements SettlementLogService {
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public int addOneSettlementLog(SettlementLogReqDTO reqDTO) {
-        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
-
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");//googleSecret
+        if(StringUtils.isEmpty(cpInfo.getGoogleSecret())){
+            return 99;
+        }
+        GoogleAuthenticator ga = new GoogleAuthenticator();
+        boolean b = ga.check_code(cpInfo.getGoogleSecret(), Long.parseLong(reqDTO.getCode()), System.currentTimeMillis());
+        if (!b) {
+            return -2;
+        }
         String faitAmount = reqDTO.getFaitAmount();
         long faitAmountLong = new BigDecimal(faitAmount).multiply(new BigDecimal(100)).longValue();
 
