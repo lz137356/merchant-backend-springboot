@@ -43,4 +43,6 @@ public class SettlementLogReqDTO {
 
     private Integer rowIndex;
 
+    private String code;
+
 }
