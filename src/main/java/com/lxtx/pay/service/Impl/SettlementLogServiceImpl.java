@@ -70,6 +70,9 @@ public class SettlementLogServiceImpl implements SettlementLogService {
         settlementLog.setAccount(reqDTO.getAccount());
         settlementLog.setFaitAmount(faitAmountLong+"");
 
+        int accountCounter = settlementLogHandler.getAccountCounter(reqDTO.getAccount());
+        settlementLog.setAccountCounter(accountCounter + 1);
+
         Long id = settlementLogHandler.insertSettlementLog(settlementLog);
         if (id == null || id == 0) {
             throw new RuntimeException();

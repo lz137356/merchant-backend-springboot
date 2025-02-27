@@ -7,15 +7,19 @@
     <typeAlias alias="settlementLog" type="com.lxtx.pay.pojo.SettlementLog"/>
 
     <insert id="SettlementLog.insert" parameterClass="com.lxtx.pay.pojo.SettlementLog">
-        insert into settlementlog (id, appId, product, card, accountType, bankName, bankNetName, accountName, account,
+        insert into settlementlog (id, appId, product, card, accountType, bankName, bankNetName, accountName, accountCounter, account,
         faitAmount, uAmount, proof, status, createTime, finishTime, rate, operator, comment)
-        values (null, #appId#,#product#,#card#,#accountType#,#bankName#,#bankNetName#,#accountName#,#account#,
+        values (null, #appId#,#product#,#card#,#accountType#,#bankName#,#bankNetName#,#accountName#, #accountCounter# ,  #account#,
         #faitAmount#, 0, '', 0, #createTime#, null, 0,
         0, #comment#)
         <selectKey keyProperty="id" resultClass="long">
             select LAST_INSERT_ID() as id
         </selectKey>
     </insert>
+
+    <select id="SettlementLog.getAccountCounter" parameterClass="String" resultClass="int">
+        select count(1) from settlementlog where account = #account#
+    </select>
 
     <select id="SettlementLog.querySettlementLogPageList" parameterClass="com.lxtx.pay.dto.SettlementLogReqDTO"
             resultClass="com.lxtx.pay.vo.SettlementLogVO">

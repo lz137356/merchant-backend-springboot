@@ -24,6 +24,10 @@ public class SettlementLogHandler extends SimpleIbatisEntityHandler<SettlementLo
         return queryForList("querySettlementLogPageList", reqDTO);
     }
 
+    public int getAccountCounter(String string) {
+        return queryForObject("getAccountCounter", string);
+    }
+
     public SettlementLogStatisticsVO querySettlementLogPageListStatistics(SettlementLogReqDTO reqDTO) {
         return queryForObject("querySettlementLogPageListStatistics", reqDTO);
     }
