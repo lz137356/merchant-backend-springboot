@@ -50,20 +50,10 @@ public class CpinfoController {
         return Result.fail("生成谷歌秘钥失败");
     }
 
-    @RequestMapping("/login")
+    @RequestMapping({"/login"})
     @ResponseBody
     public JSONObject login(HttpServletRequest request, HttpServletResponse response, CpinfoReqDTO reqDTO) throws IOException {
-        int login = cpinfoService.login(request, reqDTO);
-
-
-        if (login > 0) {
-            return Result.success("登陆成功", request.getSession().getId());
-        } else if (login == -2) {
-            return Result.fail("谷歌验证码验证失败");
-        }
-        else {
-            return Result.fail("登陆失败");
-        }
+        return this.cpinfoService.loginV2(request, reqDTO);
     }
 
     @RequestMapping("/logout")
