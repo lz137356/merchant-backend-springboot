@@ -44,4 +44,6 @@ public class SettlementLog {
 
     private String operator;
 
+    private int accountCounter;
+
 }
