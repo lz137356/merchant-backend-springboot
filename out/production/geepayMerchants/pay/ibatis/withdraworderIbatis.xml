@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="withdrawOrder" type="com.lxtx.pay.pojo.WithdrawOrder"/>
+
+    <resultMap id="WithdrawtypeList" class="WithdrawOrder">
+        <result property="Id" column="Id" />
+        <result property="AppId" column="AppId" />
+        <result property="OrderId" column="OrderId" />
+        <result property="Amount" column="Amount" />
+        <result property="Type" column="Type" />
+        <result property="BankCardNo" column="BankCardNo" />
+        <result property="BankCode" column="BankCode" />
+        <result property="BankAccountName" column="BankAccountName" />
+        <result property="BranchCode" column="BranchCode" />
+        <result property="Email" column="Email" />
+        <result property="Mobile" column="Mobile" />
+        <result property="Status" column="Status" />
+        <result property="CreateTime" column="CreateTime" />
+        <result property="ConfirmStatus" column="ConfirmStatus" />
+        <result property="TransactionNum" column="TransactionNum" />
+        <result property="WithdrawTime" column="WithdrawTime" />
+        <result property="ConfirmTime" column="ConfirmTime" />
+        <result property="ConfirmUserId" column="ConfirmUserId" />
+        <result property="WithdrawTypeId" column="WithdrawTypeId" />
+        <result property="PlatformFee" column="PlatformFee" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="CreateDay" column="CreateDay" />
+        <result property="ConfirmDay" column="ConfirmDay" />
+        <result property="WithdrawDay" column="WithdrawDay" />
+        <result property="NotifyData" column="NotifyData" />
+        <result property="SyncCnt" column="SyncCnt" />
+        <result property="NextSyncTime" column="NextSyncTime" />
+        <result property="NotifyUrl" column="NotifyUrl" />
+        <result property="Currency" column="Currency" />
+
+
+    </resultMap>
+    <resultMap id="withdrawordertodaylist" class="WithdrawOrder">
+        <result property="Amount" column="Amount" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="Count" column="Count" />
+
+    </resultMap>
+    <resultMap id="withdraworderaweeklist" class="WithdrawOrder">
+        <result property="Amount" column="Amount" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="Count" column="Count" />
+
+    </resultMap>
+    <resultMap id="withdraworderyesterdaylist" class="WithdrawOrder">
+        <result property="Amount" column="Amount" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="Count" column="Count" />
+
+    </resultMap>
+    <select id="WithdrawOrder.withdrawordertoday" resultMap="withdrawordertodaylist"  >
+
+        select COUNT(*)as Count, SUM(Amount)as Amount ,SUM(ThirdFee) as ThirdFee from withdraworder where to_days(CreateTime) = to_days(now())
+       and withdraworder.AppId = #appId# and ConfirmStatus=1
+    </select>
+    <select id="WithdrawOrder.withdraworderaweek" resultMap="withdraworderaweeklist" >
+        SELECT COUNT(*)as Count, SUM(Amount)as Amount ,SUM(ThirdFee) as ThirdFee FROM withdraworder where DATE_SUB(CURDATE(), INTERVAL 7 DAY) &lt;= date(CreateDay)
+
+        and withdraworder.AppId = #appId#
+    </select>
+    <select id="WithdrawOrder.withdraworderyesterday" resultMap="withdraworderyesterdaylist">
+        SELECT COUNT(*)as Count, SUM(Amount)as Amount ,SUM(ThirdFee) as ThirdFee FROM withdraworder WHERE TO_DAYS( NOW( ) ) - TO_DAYS( CreateTime) &lt;= 1
+      and withdraworder.AppId = #appId# and ConfirmStatus=1
+
+    </select>
+    <select id="WithdrawOrder.selectWithdrawOrder"   resultClass="WithdrawOrder" >
+        SELECT * FROM withdraworder where appId = #appId#
+    </select>
+
+
+    <select id="WithdrawOrder.Allwithdraworder" resultMap="WithdrawtypeList" parameterClass="java.util.Map">
+        SELECT *,c.UserName as UserName FROM withdraworder w left join cpinfo c on w.AppId = c.AppId
+        where c.AppId = #AppId#
+
+        <isNotEmpty prepend="and" property="Id">
+            w.Id = #Id#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="OrderId">
+            w.OrderId = #OrderId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="Type">
+            w.Type = #Type#
+        </isNotEmpty>
+
+
+        <isNotEmpty prepend="and" property="ConfirmStatus">
+            w.ConfirmStatus = #ConfirmStatus#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="startTime">
+            w.CreateTime &gt;= #startTime#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="endTime">
+            w.CreateTime &lt;= #endTime#
+        </isNotEmpty>
+
+
+        order by w.CreateTime desc
+        <isNotEmpty property="rowIndex">
+            limit $rowIndex$,$limit$
+        </isNotEmpty>
+    </select>
+    <select id="WithdrawOrder.Allwithdrawordercount" resultClass="int" parameterClass="java.util.Map" >
+        SELECT count(w.Id) FROM withdraworder w left join cpinfo c on w.AppId = c.AppId
+        where c.AppId = #AppId#
+
+        <isNotEmpty prepend="and" property="Id">
+            w.Id = #Id#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="OrderId">
+            w.OrderId = #OrderId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="Type">
+            w.Type = #Type#
+        </isNotEmpty>
+
+        <isNotEmpty prepend="and" property="ConfirmStatus">
+            w.ConfirmStatus = #ConfirmStatus#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="startTime">
+            w.CreateTime &gt;= #startTime#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="endTime">
+            w.CreateTime &lt;= #endTime#
+        </isNotEmpty>
+    </select>
+
+
+
+    <select id="WithdrawOrder.withdrawcount" parameterClass="java.util.Map" resultClass="int">
+        SELECT count(*) FROM withdraworder w left join cpinfo c on w.AppId = c.AppId left join withdrawtype wd on w.WithdrawTypeId=wd.Id
+        where  1=1
+        <isNotEmpty prepend="and" property="appId">
+                w.AppId = #appId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="id">
+            w.Id = #id#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="orderId">
+            w.OrderId = #orderId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="status">
+            w.Status = #status#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="CreateDay">
+            w.CreateDay = #CreateDay#
+        </isNotEmpty>
+
+    </select>
+
+
+    <select id="WithdrawOrder.queryAllByPageAndLimit" resultMap="WithdrawtypeList">
+        SELECT * FROM withdraworder w left join cpinfo c on w.AppId = c.AppId left join withdrawtype wd on w.WithdrawTypeId=wd.Id
+        limit $rowIndex$,$limit$
+    </select>
+    <select id="WithdrawOrder.querywithdraworderdates"   resultClass="WithdrawOrder" parameterClass="java.util.Map">
+        select * from Withdrawlog where CreateDay between #earlyDate# and #lateDate#
+
+        <isNotEmpty prepend="and" property="id">
+            Id = #id#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="orderId">
+            OrderId = #orderId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="status">
+            ConfirmStatus = #status#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="createTime">
+            CreateDay = #CreateDay#
+        </isNotEmpty>
+    </select>
+    <select id="WithdrawOrder.querycondition"   resultClass="Withdraworder" parameterClass="java.util.Map">
+        select w.*,w2.Name from withdraworder w left join withdrawtype w2 on WithdrawTypeId=w2.Id
+        where  1=1
+        <isNotEmpty prepend="and" property="appId">
+            AppId = #appId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="id">
+            w.Id = #id#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="typeid">
+            WithdrawTypeId = #typeid#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="orderId">
+            OrderId = #orderId#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="confirmstatus">
+            w.ConfirmStatus = #confirmstatus#
+        </isNotEmpty>
+        <isNotEmpty prepend="and" property="CreateDay">
+            CreateDay = #CreateDay#
+        </isNotEmpty>
+        <isNotEmpty property="rowIndex">
+            limit $rowIndex$,$limit$
+        </isNotEmpty>
+    </select>
+
+
+    <insert id="WithdrawOrder.insert"   parameterClass="Withdraworder" >
+
+        insert into withdraworder values (null,#AppId#,#OrderId#,#Amount#,#Type#,#BankCardNo#,#BankCode#
+        ,#BankAccountName#,#BranchCode#,#Email#,#Mobile#
+                                             ,#Status#,#CreateTime#,#ConfirmStatus#,#TransactionNum#,#WithdrawTime#,#ConfirmTime#,#ConfirmUserId#,#WithdrawTypeId#,#PlatformFee#,#ThirdFee#,#CreateDay#,#ConfirmDay#
+                                             ,#WithdrawDay#,#NotifyData#,#Ip#,#SyncCnt#,#NextSyncTime#
+                                              ,#NotifyUrl# ,#Currency#
+                                      )
+
+        <selectKey resultClass="int" keyProperty="id">
+            select max(Id) from withdraworder
+        </selectKey>
+
+    </insert>
+
+    <select id="WithdrawOrder.queryByOrderId" resultClass="WithdrawOrder">
+        select  * from withdraworder where OrderId=#OrderId#
+    </select>
+    <update id="WithdrawOrder.updateStatusAndSynccnt" parameterClass="java.util.Map">
+        update withdraworder set SyncCnt=#synccnt#,ConfirmStatus=#status# where Id=#id#
+    </update>
+
+    <select id="WithdrawOrder.selectOne" parameterClass="WithdrawOrder" resultClass="WithdrawOrder">
+        select * from withdraworder where Id=#Id#
+    </select>
+
+    <select id="WithdrawOrder.cpstatown" resultClass="com.lxtx.pay.pojo.CpstatOwn" parameterClass="java.util.Map">
+        select COALESCE(SUM(Amount),0)  as WithdrawAmount,
+               COALESCE(SUM(ThirdFee),0) as WithdrawFee,
+               COALESCE(count(Id),0) as TodayWithdrawNum
+
+        from withdraworder where CreateDay=#statday#
+
+
+    </select>
+</sqlMap>

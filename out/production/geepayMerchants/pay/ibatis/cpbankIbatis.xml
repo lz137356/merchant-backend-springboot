@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="CpBank" type="com.lxtx.pay.pojo.CpBank"/>
+
+
+
+        <select id="CpBank.querycpbank"   resultClass="CpBank">
+          select * from CpBank
+          where AppId = #appId#
+                <isNotEmpty property="rowIndex">
+                    limit $rowIndex$,$limit$
+                </isNotEmpty>
+        </select>
+
+    <select id="CpBank.querycount"  parameterClass="java.util.Map" resultClass="int">
+        select count(*) from CpBank
+        <dynamic prepend="WHERE">
+            <isNotEmpty prepend="and" property="appId">
+                AppId = #appId#
+            </isNotEmpty>
+        </dynamic>
+
+    </select>
+
+    <delete id="CpBank.deleteByPrimaryKey" parameterClass="int">
+        delete from CpBank where Id=#id#
+    </delete>
+
+    <insert id="CpBank.insert" parameterClass="com.lxtx.pay.pojo.CpBank">
+        insert into CpBank (Id, AppId, TxType, BankCode, BankCardType, BankCardNo, BankCardName, Mobile, CreditValid, CreditCvv, Email, Upi)
+
+
+        values
+        (null,#AppId#,#TxType#,#BankCode#,#BankCardType#,#BankCardNo#,#BankCardName#,#Mobile#,#CreditValid#,#CreditCvv#,#Email#,#Upi#)
+    </insert>
+    <update id="CpBank.update" parameterClass="CpBank">
+        update CpBank  set
+                           Id = #Id#,
+                           TxType = #TxType#,
+                           BankCardType = #BankCardType#,
+                           BankCode = #BankCode#,
+                           BankCardNo = #BankCardNo#,
+                           BankCardName = #BankCardName#,
+                           Mobile = #Mobile#,
+                           CreditValid = #CreditValid#,
+                           CreditCvv = #CreditCvv#,
+                           Mobile = #Mobile#,
+                           Upi = #Upi#
+        where  Id = #Id#
+
+    </update>
+
+    <select id="CpBank.queryAll" parameterClass="java.util.Map" resultClass="com.lxtx.pay.pojo.CpBank">
+        select * from cpbank where AppId=#appId#
+    </select>
+</sqlMap>

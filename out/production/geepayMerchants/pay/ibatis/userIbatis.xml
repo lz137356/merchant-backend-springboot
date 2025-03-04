@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="user" type="com.lxtx.pay.pojo.User"/>
+
+    <select id="User.login" resultClass="User" parameterClass="User">
+   	select * from user where user.userName  = #username#
+   </select>
+
+    <select id="User.queryAllByRole" resultClass="User" parameterClass="int">
+        select  * from  user  where role =#role#
+    </select>
+
+    <insert id="User.insert" parameterClass="User">
+        insert into user values (null,#username#,#password#,#salt#,#role#,#logintime#,#status#,#createtime#,#appId#)
+    </insert>
+    <delete id="User.deleteByPrimaryKey" parameterClass="int">
+          delete from user where userId=#userId#
+    </delete>
+    <update id="User.update" parameterClass="User">
+            update user u set u.userName = #username#,
+                             u.password = #password#,
+                             u.role = #role#,
+                             u.status = #status#,
+                             u.appId=#appId#
+                             where userId = #userId#
+          </update>
+
+</sqlMap>

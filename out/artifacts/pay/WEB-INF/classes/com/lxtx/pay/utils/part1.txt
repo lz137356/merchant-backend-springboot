@@ -1,0 +1,18 @@
+java.lang.Exception: Current stack trace
+	at com.facebook.ads.redexgen.X.OE.A00(:37640)
+	at com.facebook.ads.redexgen.X.OE.A01(:37645)
+	at com.facebook.ads.redexgen.X.3V.A02(:4715)
+	at com.facebook.ads.redexgen.X.3Z.A0P(:4900)
+	at com.facebook.ads.redexgen.X.3Z.A0G(:4857)
+	at com.facebook.ads.redexgen.X.4B.A09(:5869)
+	at com.facebook.ads.redexgen.X.4J.A0A(:6037)
+	at com.facebook.ads.redexgen.X.4J.A0B(:6043)
+	at com.facebook.ads.redexgen.X.9A.A03(:19075)
+	at com.facebook.ads.redexgen.X.9A.loadAd(:19092)
+	at com.facebook.ads.redexgen.X.9A.loadAd(:19088)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.facebook.ads.redexgen.X.8U.invoke(:17970)
+	at java.lang.reflect.Proxy.invoke(Proxy.java:{%d})
+	at $Proxy1.loadAd(Unknown Source)
+	at com.facebook.ads.InterstitialAd.loadAd(InterstitialAd.java:212)
+	

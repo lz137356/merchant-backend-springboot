@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="paystat" type="com.lxtx.pay.pojo.Paystat"/>
+    <typeAlias alias="paytype" type="com.lxtx.pay.pojo.PayType"/>
+
+    <resultMap id="PaystatList" class="Paystat">
+        <result property="Id" column="Id" />
+        <result property="PayTypeId" column="PayTypeId" />
+        <result property="StatDay" column="StatDay" />
+        <result property="PayAmount" column="PayAmount" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="PayThirdFee" column="PayThirdFee" />
+        <result property="WithdrawAmount" column="WithdrawAmount" />
+        <result property="WithdrawThirdFee" column="WithdrawThirdFee" />
+        <result property="name" column="Name" />
+        <!--        <result property="feefix" column="feefix" />-->
+        <!--        <result property="feerate" column="feerate" />-->
+
+    </resultMap>
+    <select id="Paystat.queryAll" parameterClass="java.util.Map" resultMap="PaystatList">
+        select a.*,a.ThirdFee as  PayThirdFee,b.WithdrawAmount,b.ThirdFee as WithdrawThirdFee,paytype.Name
+        FROM
+                (SELECT * FROM paystat) a
+                    LEFT JOIN
+            (SELECT id,withdrawstat.WithdrawAmount,withdrawstat.ThirdFee FROM withdrawstat ) b
+            ON a.id=b.id left join paytype on a.PayTypeId=paytype.Id
+        <dynamic prepend="where">
+            <isNotEmpty prepend="and" property="PayTypeId">
+                PayTypeId = #PayTypeId#
+            </isNotEmpty>
+            <isNotEmpty property="StatDay" prepend="and">
+                StatDay = #StatDay#
+            </isNotEmpty>
+        </dynamic>
+
+        order by StatDay desc
+    </select>
+    <select id="Paystat.querypaystat" resultMap="PaystatList" parameterClass="java.util.Map">
+        SELECT *  from paystat s left join paytype t  on s.PayTypeId = t.Id
+        where 1 = 1
+        <isNotEmpty prepend="and" property="PayTypeId">
+            PayTypeId = #PayTypeId#
+        </isNotEmpty>
+        <isNotEmpty property="StatDay" prepend="and">
+            StatDay = #StatDay#
+        </isNotEmpty>
+        order by   StatDay desc
+    </select>
+    <select id="Paystat.querypaystatdates" resultMap="PaystatList" parameterClass="java.util.Map">
+        SELECT *  from paystat s left join paytype t  on s.PayTypeId = t.Id where StatDay between #earlyDate# and #lateDate#
+        <isNotEmpty prepend="and" property="PayTypeId">
+            PayTypeId = #PayTypeId#
+        </isNotEmpty>
+        order by   StatDay desc
+    </select>
+</sqlMap>

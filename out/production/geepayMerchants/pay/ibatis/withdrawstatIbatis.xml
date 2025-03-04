@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+        PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="db">
+    <typeAlias alias="withdrawType" type="com.lxtx.pay.pojo.WithdrawType"/>
+    <typeAlias alias="withdrawstat" type="com.lxtx.pay.pojo.Withdrawstat"/>
+
+    <resultMap id="WithdrawstatList" class="Withdrawstat">
+        <result property="Id" column="Id" />
+        <result property="WithdrawTypeId" column="WithdrawTypeId" />
+        <result property="StatDay" column="StatDay" />
+        <result property="WithdrawAmount" column="WithdrawAmount" />
+        <result property="ThirdFee" column="ThirdFee" />
+        <result property="name" column="name" />
+<!--        <result property="feefix" column="feefix" />-->
+<!--        <result property="feerate" column="feerate" />-->
+
+    </resultMap>
+
+    <select id="Withdrawstat.querywithdrawstat" resultMap="WithdrawstatList" parameterClass="java.util.Map">
+        SELECT *  from withdrawstat w left join withdrawtype t  on w.WithdrawTypeId = t.Id
+                where 1 = 1
+        <isNotEmpty prepend="and" property="WithdrawTypeId">
+            WithdrawTypeId = #WithdrawTypeId#
+        </isNotEmpty>
+        <isNotEmpty property="StatDay" prepend="and">
+            StatDay = #StatDay#
+        </isNotEmpty>
+        order by   StatDay desc
+        <!--select *  from Paystat  where  1 = 1
+        <isNotEmpty prepend="and" property="PayTypeId">
+            PayTypeId = #PayTypeId#
+        </isNotEmpty>
+        <isNotEmpty property="StatDay" prepend="and">
+            StatDay = #StatDay#
+        </isNotEmpty>
+        order by   StatDay desc-->
+
+    </select>
+    <select id="Withdrawstat.querywithdrawstatdates" resultMap="WithdrawstatList" parameterClass="java.util.Map">
+        SELECT *  from withdrawstat w left join withdrawtype t  on w.WithdrawTypeId = t.Id where StatDay between #earlyDate# and #lateDate#
+
+        <isNotEmpty prepend="and" property="WithdrawTypeId">
+            WithdrawTypeId = #WithdrawTypeId#
+        </isNotEmpty>
+        <isNotEmpty property="StatDay" prepend="and">
+            StatDay = #StatDay#
+        </isNotEmpty>
+        order by   StatDay desc
+        <!--select *  from Paystat  where  1 = 1
+        <isNotEmpty prepend="and" property="PayTypeId">
+            PayTypeId = #PayTypeId#
+        </isNotEmpty>
+        <isNotEmpty property="StatDay" prepend="and">
+            StatDay = #StatDay#
+        </isNotEmpty>
+        order by   StatDay desc-->
+
+    </select>
+
+</sqlMap>

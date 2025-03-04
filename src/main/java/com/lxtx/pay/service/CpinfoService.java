@@ -14,22 +14,22 @@ import java.text.ParseException;
 
 public interface CpinfoService {
 
-    int changePassword(HttpServletRequest request, CpInfoSettingReqDTO reqDTO);
+    int changePassword(HttpServletRequest var1, CpInfoSettingReqDTO var2);
 
-    CpInfoSettingVO createCpInfoSecret(HttpServletRequest request);
+    CpInfoSettingVO createCpInfoSecret(HttpServletRequest var1);
 
-    JSONObject createCpInfoSecret(CpinfoReqDTO reqDTO);
+    JSONObject createCpInfoSecret(CpinfoReqDTO var1);
 
-    int login(HttpServletRequest request, CpinfoReqDTO reqDTO);
+    int login(HttpServletRequest var1, CpinfoReqDTO var2);
 
-    JSONObject loginV2(HttpServletRequest request, CpinfoReqDTO reqDTO);
+    JSONObject loginV2(HttpServletRequest var1, CpinfoReqDTO var2);
 
-    void logout(HttpServletRequest request, HttpServletResponse response);
+    void logout(HttpServletRequest var1, HttpServletResponse var2);
 
-    CpHomeStaticticsVO getCpHomeStatictics(HttpServletRequest request, CpHomeStaticticsReqDTO reqDTO) throws ParseException;
+    CpHomeStaticticsVO getCpHomeStatictics(HttpServletRequest var1, CpHomeStaticticsReqDTO var2) throws ParseException;
 
-    CpInfoRemainVO getCpInfoRemain(HttpServletRequest request);
+    CpInfoRemainVO getCpInfoRemain(HttpServletRequest var1);
 
-    JSONObject getGoogleSecret(HttpServletRequest request);
+    JSONObject getGoogleSecret(HttpServletRequest var1);
 
 }

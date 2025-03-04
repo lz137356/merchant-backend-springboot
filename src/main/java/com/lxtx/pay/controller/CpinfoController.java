@@ -13,7 +13,6 @@ import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -41,30 +40,20 @@ public class CpinfoController {
         }
     }
 
-//    @RequestMapping("/createGoogleSecret")
-//    @ResponseBody
-//    public JSONObject createGoogleSecret(HttpServletRequest request) {
-//        CpInfoSettingVO cpInfoSecret = cpinfoService.createCpInfoSecret(request);
-//        if (cpInfoSecret != null) {
-//            return Result.success(cpInfoSecret);
-//        }
-//        return Result.fail("生成谷歌秘钥失败");
-//    }
-
     @RequestMapping("/createGoogleSecret")
     @ResponseBody
-    public JSONObject createGoogleSecret(CpinfoReqDTO reqDTO) {
-        JSONObject cpInfoSecret = cpinfoService.createCpInfoSecret(reqDTO);
+    public JSONObject createGoogleSecret(HttpServletRequest request) {
+        CpInfoSettingVO cpInfoSecret = cpinfoService.createCpInfoSecret(request);
         if (cpInfoSecret != null) {
             return Result.success(cpInfoSecret);
         }
         return Result.fail("生成谷歌秘钥失败");
     }
 
-    @RequestMapping("/login")
+    @RequestMapping({"/login"})
     @ResponseBody
     public JSONObject login(HttpServletRequest request, HttpServletResponse response, CpinfoReqDTO reqDTO) throws IOException {
-        return cpinfoService.loginV2(request, reqDTO);
+        return this.cpinfoService.loginV2(request, reqDTO);
     }
 
     @RequestMapping("/logout")
