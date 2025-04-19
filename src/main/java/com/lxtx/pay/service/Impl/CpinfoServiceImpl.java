@@ -16,6 +16,7 @@ import com.lxtx.pay.pojo.LoginLog;
 import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.utils.CommonUtil;
 import com.lxtx.pay.utils.GoogleAuthenticator;
+import com.lxtx.pay.utils.RSAUtil;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
@@ -23,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
 
@@ -241,12 +244,12 @@ public class CpinfoServiceImpl implements CpinfoService {
         if (secretKey != null) {
             CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
             cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
-            cpInfoSettingReqDTO.setPublicKey(secretKey.getString("publicKey"));
+            cpInfoSettingReqDTO.setPublicKey(secretKey.getString("privateKey").replace("\\u003d", "="));
             int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
             if (i > 0) {
                 request.getSession().removeAttribute("cpInfo");
                 CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
-                cpInfoSettingVO.setPayRsaKey(secretKey.getString("privateKey"));
+                cpInfoSettingVO.setPayRsaKey(secretKey.getString("publicKey"));
                 return cpInfoSettingVO;
             } else {
                 return null;
@@ -257,7 +260,8 @@ public class CpinfoServiceImpl implements CpinfoService {
     }
 
 
-    public JSONObject getRsaKey() {
+
+    public static JSONObject getRsaKey() {
         JSONObject jsonObject = new JSONObject();
         KeyPairGenerator keyGen = null;
         try {
