@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -36,6 +35,14 @@ public class MoneyLogServiceImpl implements MoneyLogService {
                 moneyLogVOList) {
             Integer type = m.getType();
             Integer sceneInfo = m.getSceneInfo();
+            try {
+                if (org.apache.commons.lang3.StringUtils.isEmpty(m.getOrderId())) {
+                    m.setOrderId(m.getNotes());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             if (type == 1 && sceneInfo == 1) {
                 m.setDetails("商户充值成功，余额增加。");
             } else if (type == 1 && sceneInfo == 3) {

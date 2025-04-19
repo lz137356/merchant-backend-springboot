@@ -28,6 +28,15 @@ public class MoneyLogVO {
     private String details;
 
     private Date createTime;
+    private String notes;
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 
     public Integer getId() {
         return id;
