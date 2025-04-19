@@ -15,7 +15,7 @@ import java.text.ParseException;
 public interface CpinfoService {
 
     int changePassword(HttpServletRequest var1, CpInfoSettingReqDTO var2);
-
+    CpInfoSettingVO resetPayKey(HttpServletRequest var1, CpInfoSettingReqDTO var2);
     CpInfoSettingVO createCpInfoSecret(HttpServletRequest var1);
 
     JSONObject createCpInfoSecret(CpinfoReqDTO var1);

@@ -74,6 +74,7 @@
         set publicKey = #publicKey#
         where AppId = #appId#
     </update>
+
     <select id="CpInfo.getCpPayHomeStatictics" parameterClass="com.lxtx.pay.dto.CpHomeStaticticsReqDTO"
             resultClass="com.lxtx.pay.vo.CpHomeStaticticsVO">
         SELECT SUM(a.Amount)                            AS 'totalPayAmount',
