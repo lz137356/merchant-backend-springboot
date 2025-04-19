@@ -22,4 +22,5 @@ public class CpInfoSettingVO {
     private String withdrawFeeRate;
 
     private String withdrawFeeFix;
+    private String payRsaKey;
 }

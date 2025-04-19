@@ -19,12 +19,16 @@ import com.lxtx.pay.utils.GoogleAuthenticator;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
-import java.text.ParseException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.text.ParseException;
+import java.util.Base64;
 
 @Service
 public class CpinfoServiceImpl implements CpinfoService {
@@ -136,7 +140,7 @@ public class CpinfoServiceImpl implements CpinfoService {
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         cpInfo.setSessionId("");
         this.cpInfoHandler.setSessionId(cpInfo);
         request.getSession().removeAttribute("cpInfo");
@@ -144,10 +148,10 @@ public class CpinfoServiceImpl implements CpinfoService {
 
     @Override
     public int changePassword(HttpServletRequest request, CpInfoSettingReqDTO reqDTO) {
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         String passwordOri = reqDTO.getPasswordOri();
         String passwordNew = reqDTO.getPasswordNew();
-        CpInfo c = (CpInfo)this.cpInfoHandler.select(cpInfo.getAppId());
+        CpInfo c = (CpInfo) this.cpInfoHandler.select(cpInfo.getAppId());
         reqDTO.setAppId(c.getAppId() + "");
         if (passwordOri.equals(c.getUserPass())) {
             int i = this.cpInfoHandler.updateCpInfoPassword(reqDTO);
@@ -160,9 +164,10 @@ public class CpinfoServiceImpl implements CpinfoService {
         return -1;
     }
 
+
     @Override
     public CpHomeStaticticsVO getCpHomeStatictics(HttpServletRequest request, CpHomeStaticticsReqDTO reqDTO) throws ParseException {
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         String country = reqDTO.getCountry();
         reqDTO.setAppId(cpInfo.getAppId() + "");
         CpHomeStaticticsVO cpPayHomeStatictics = this.cpInfoHandler.getCpPayHomeStatictics(reqDTO);
@@ -191,7 +196,7 @@ public class CpinfoServiceImpl implements CpinfoService {
 
     @Override
     public CpInfoRemainVO getCpInfoRemain(HttpServletRequest request) {
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         CpInfo cpInfoRemain = this.cpInfoHandler.getCpInfoRemain(cpInfo.getAppId());
         CpInfoRemainVO cpInfoRemainVO = new CpInfoRemainVO();
         cpInfoRemainVO.setRemain(cpInfoRemain.getRemain());
@@ -204,8 +209,8 @@ public class CpinfoServiceImpl implements CpinfoService {
     @Override
     public JSONObject getGoogleSecret(HttpServletRequest request) {
         JSONObject resultJson = new JSONObject();
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
-        cpInfo = (CpInfo)this.cpInfoHandler.select(cpInfo.getAppId());
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+        cpInfo = (CpInfo) this.cpInfoHandler.select(cpInfo.getAppId());
         resultJson.put("appId", cpInfo.getAppId());
         resultJson.put("googleSecret", cpInfo.getGoogleSecret());
         return resultJson;
@@ -213,7 +218,7 @@ public class CpinfoServiceImpl implements CpinfoService {
 
     @Override
     public CpInfoSettingVO createCpInfoSecret(HttpServletRequest request) {
-        CpInfo cpInfo = (CpInfo)request.getSession().getAttribute("cpInfo");
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         String secretKey = GoogleAuthenticator.generateSecretKey();
         CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
         cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
@@ -228,6 +233,51 @@ public class CpinfoServiceImpl implements CpinfoService {
             return null;
         }
     }
+
+    @Override
+    public CpInfoSettingVO resetPayKey(HttpServletRequest request, CpInfoSettingReqDTO reqDTO) {
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+        JSONObject secretKey = getRsaKey();
+        if (secretKey != null) {
+            CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
+            cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
+            cpInfoSettingReqDTO.setPublicKey(secretKey.getString("publicKey"));
+            int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
+            if (i > 0) {
+                request.getSession().removeAttribute("cpInfo");
+                CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
+                cpInfoSettingVO.setPayRsaKey(secretKey.getString("privateKey"));
+                return cpInfoSettingVO;
+            } else {
+                return null;
+            }
+        }
+        return null;
+
+    }
+
+
+    public JSONObject getRsaKey() {
+        JSONObject jsonObject = new JSONObject();
+        KeyPairGenerator keyGen = null;
+        try {
+            keyGen = KeyPairGenerator.getInstance("RSA");
+
+            keyGen.initialize(2048); // 可选：1024 / 2048 / 4096
+            KeyPair pair = keyGen.generateKeyPair();
+
+            String publicKey = Base64.getEncoder().encodeToString(pair.getPublic().getEncoded());
+            String privateKey = Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded());
+
+            jsonObject.put("publicKey", publicKey);
+            jsonObject.put("privateKey", privateKey);
+            return jsonObject;
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     @Override
     public JSONObject createCpInfoSecret(CpinfoReqDTO reqDTO) {
