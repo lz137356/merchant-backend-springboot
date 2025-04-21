@@ -245,20 +245,15 @@ public class CpinfoServiceImpl implements CpinfoService {
                 GoogleAuthenticator ga = new GoogleAuthenticator();
                 boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleSecret()), System.currentTimeMillis());
                 if (b) {
-                    JSONObject secretKey = getRsaKey();
-                    if (secretKey != null) {
-                        CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
-                        cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
-                        cpInfoSettingReqDTO.setPublicKey(secretKey.getString("privateKey").replace("\\u003d", "="));
-                        int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
-                        if (i > 0) {
-                            request.getSession().removeAttribute("cpInfo");
-                            CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
-                            cpInfoSettingVO.setPayRsaKey(secretKey.getString("publicKey"));
-                            return cpInfoSettingVO;
-                        } else {
-                            return null;
-                        }
+                    CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
+                    cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
+                    cpInfoSettingReqDTO.setPublicKey(reqDTO.getPublicKey().replace("\\u003d", "="));
+                    int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
+                    if (i > 0) {
+                        CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
+                        return cpInfoSettingVO;
+                    } else {
+                        return null;
                     }
                 }
             }
