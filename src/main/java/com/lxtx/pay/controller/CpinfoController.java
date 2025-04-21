@@ -48,7 +48,7 @@ public class CpinfoController {
         if (cpInfoSecret != null) {
             return Result.success(cpInfoSecret);
         } else {
-            return Result.fail("重置失败。");
+            return Result.fail("重置失败。请检查验证码是否正确");
         }
     }
 

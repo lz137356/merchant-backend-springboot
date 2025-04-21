@@ -16,7 +16,6 @@ import com.lxtx.pay.pojo.LoginLog;
 import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.utils.CommonUtil;
 import com.lxtx.pay.utils.GoogleAuthenticator;
-import com.lxtx.pay.utils.RSAUtil;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
@@ -24,12 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Cipher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.*;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.text.ParseException;
 import java.util.Base64;
 
@@ -240,25 +237,35 @@ public class CpinfoServiceImpl implements CpinfoService {
     @Override
     public CpInfoSettingVO resetPayKey(HttpServletRequest request, CpInfoSettingReqDTO reqDTO) {
         CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
-        JSONObject secretKey = getRsaKey();
-        if (secretKey != null) {
-            CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
-            cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
-            cpInfoSettingReqDTO.setPublicKey(secretKey.getString("privateKey").replace("\\u003d", "="));
-            int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
-            if (i > 0) {
-                request.getSession().removeAttribute("cpInfo");
-                CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
-                cpInfoSettingVO.setPayRsaKey(secretKey.getString("publicKey"));
-                return cpInfoSettingVO;
-            } else {
+        String googleSecret = cpInfo.getGoogleSecret();
+        if (StringUtils.isNotEmpty(googleSecret)) {
+            if (StringUtils.isEmpty(reqDTO.getGoogleSecret())) {
                 return null;
+            } else {
+                GoogleAuthenticator ga = new GoogleAuthenticator();
+                boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleSecret()), System.currentTimeMillis());
+                if (b) {
+                    JSONObject secretKey = getRsaKey();
+                    if (secretKey != null) {
+                        CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
+                        cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
+                        cpInfoSettingReqDTO.setPublicKey(secretKey.getString("privateKey").replace("\\u003d", "="));
+                        int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
+                        if (i > 0) {
+                            request.getSession().removeAttribute("cpInfo");
+                            CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
+                            cpInfoSettingVO.setPayRsaKey(secretKey.getString("publicKey"));
+                            return cpInfoSettingVO;
+                        } else {
+                            return null;
+                        }
+                    }
+                }
             }
         }
         return null;
 
     }
-
 
 
     public static JSONObject getRsaKey() {

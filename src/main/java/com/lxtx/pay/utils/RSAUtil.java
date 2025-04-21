@@ -64,7 +64,7 @@ public class RSAUtil {
         System.out.println("🔏 私钥: " + privateKey);
 
         // 明文
-        String text = "HelloFastjsonRSA";
+        String text = "amount=10000&currency=INR&merchant_id=202366100&notify_url=https://www.google.com&order_id=202366100160101&pay_type=1&return_url=https://www.google.com&key=keyValue";
         System.out.println("📤 原文: " + text);
 
         // 加密
