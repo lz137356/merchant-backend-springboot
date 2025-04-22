@@ -12,6 +12,7 @@ public class CpInfoSettingReqDTO {
     private String passwordNew;
 
     private String googleSecret;
+    private String publicKey;
 
     
 }

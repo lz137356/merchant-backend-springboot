@@ -23,6 +23,13 @@ public class CpInfoHandler extends SimpleIbatisEntityHandler<CpInfo> {
     public int updateCpInfoPassword(CpInfoSettingReqDTO reqDTO) {
         return update("updateCpInfoPassword", reqDTO);
     }
+    public int updateCpInfoPaykey(CpInfoSettingReqDTO reqDTO) {
+        return update("updateCpInfoPaykey", reqDTO);
+    }
+
+
+
+
 
     public CpInfo queryOne(CpinfoReqDTO reqDTO) {
         return queryForObject("cpinfoIsExist", reqDTO);

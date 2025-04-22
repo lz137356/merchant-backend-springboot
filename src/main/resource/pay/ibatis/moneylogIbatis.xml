@@ -19,7 +19,7 @@
 
     <select id="Moneylog.queryMoneyLogPageList" parameterClass="com.lxtx.pay.dto.MoneyLogReqDTO"
             resultClass="com.lxtx.pay.vo.MoneyLogVO">
-        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid
+        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid,notes
         from moneylog m
         where AppId = #appId#
         <isNotEmpty property="id" prepend="and">

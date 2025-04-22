@@ -40,6 +40,18 @@ public class CpinfoController {
         }
     }
 
+
+    @RequestMapping("/resetPayKey")
+    @ResponseBody
+    public JSONObject resetPayKey(HttpServletRequest request, CpInfoSettingReqDTO reqDTO) {
+        CpInfoSettingVO cpInfoSecret = cpinfoService.resetPayKey(request, reqDTO);
+        if (cpInfoSecret != null) {
+            return Result.success(cpInfoSecret);
+        } else {
+            return Result.fail("重置失败。请检查验证码是否正确");
+        }
+    }
+
     @RequestMapping("/createGoogleSecret")
     @ResponseBody
     public JSONObject createGoogleSecret(HttpServletRequest request) {
@@ -83,7 +95,7 @@ public class CpinfoController {
         CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         String userPass = cpInfo.getUserPass();
         if (reqDTO.getPassword().equals(userPass)) {
-            return Result.success("true",null);
+            return Result.success("true", null);
         } else {
             return Result.fail("wrong");
         }
