@@ -130,6 +130,9 @@ public class CpinfoServiceImpl implements CpinfoService {
                         }
                     }
                 } else {
+
+                    request.getSession().setAttribute("cpInfo", cpInfo);
+
                     response.put("code", -2);
                     response.put("msg", "首次登录请生成并绑定谷歌秘钥");
                     return response;
@@ -217,7 +220,7 @@ public class CpinfoServiceImpl implements CpinfoService {
     }
 
     @Override
-    public CpInfoSettingVO createCpInfoSecret(HttpServletRequest request) {
+    public JSONObject createCpInfoSecret(HttpServletRequest request) {
         CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
         String secretKey = GoogleAuthenticator.generateSecretKey();
         CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
@@ -226,9 +229,10 @@ public class CpinfoServiceImpl implements CpinfoService {
         int i = this.cpInfoHandler.updateCpInfoGoogleSecret(cpInfoSettingReqDTO);
         if (i > 0) {
             request.getSession().removeAttribute("cpInfo");
-            CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
-            cpInfoSettingVO.setGoogleSecret(secretKey);
-            return cpInfoSettingVO;
+            JSONObject data = new JSONObject();
+            data.put("googleSecret", secretKey);
+            data.put("qrBarcode", "otpauth://totp/goopay?secret=" + secretKey + "&issuer=snapay");
+            return data;
         } else {
             return null;
         }
