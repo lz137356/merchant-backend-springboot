@@ -55,7 +55,7 @@ public class CpinfoController {
     @RequestMapping("/createGoogleSecret")
     @ResponseBody
     public JSONObject createGoogleSecret(HttpServletRequest request) {
-        CpInfoSettingVO cpInfoSecret = cpinfoService.createCpInfoSecret(request);
+        JSONObject cpInfoSecret = cpinfoService.createCpInfoSecret(request);
         if (cpInfoSecret != null) {
             return Result.success(cpInfoSecret);
         }
