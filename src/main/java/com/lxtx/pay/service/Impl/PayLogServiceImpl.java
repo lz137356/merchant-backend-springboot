@@ -122,12 +122,16 @@ public class PayLogServiceImpl implements PayLogService {
 
     @Override
     public int changeSyncCnt(PayLogReqDTO reqDTO) {
-        int i = paylogHandler.changeSyncCnt(reqDTO);
-        if (i> 0) {
-            push(reqDTO.getId() + "");
+        Long id = reqDTO.getId();
+        Paylog paylog = paylogHandler.select(id);
+        if (paylog.getStatus() == 1 ) {
+            int i = paylogHandler.changeSyncCnt(reqDTO);
+            if (i> 0) {
+                push(reqDTO.getId() + "");
+                return 1;
+            }
         }
-
-        return i;
+        return 0;
     }
 
     @Override
