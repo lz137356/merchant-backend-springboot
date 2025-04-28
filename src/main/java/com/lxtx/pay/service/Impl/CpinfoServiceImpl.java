@@ -247,7 +247,9 @@ public class CpinfoServiceImpl implements CpinfoService {
                 if (b) {
                     CpInfoSettingReqDTO cpInfoSettingReqDTO = new CpInfoSettingReqDTO();
                     cpInfoSettingReqDTO.setAppId(cpInfo.getAppId() + "");
-                    cpInfoSettingReqDTO.setPublicKey(reqDTO.getPublicKey().replace("\\u003d", "="));
+                    cpInfoSettingReqDTO.setPublicKey(reqDTO.getPublicKey().replace("\\u003d", "=").replace("-----BEGIN PRIVATE KEY-----", "")
+                            .replace("-----END PRIVATE KEY-----", "")
+                            .replaceAll("\\s+", ""));
                     int i = this.cpInfoHandler.updateCpInfoPaykey(cpInfoSettingReqDTO);
                     if (i > 0) {
                         CpInfoSettingVO cpInfoSettingVO = new CpInfoSettingVO();
