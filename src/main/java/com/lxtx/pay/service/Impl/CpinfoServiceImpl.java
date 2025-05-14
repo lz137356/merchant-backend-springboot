@@ -47,7 +47,7 @@ public class CpinfoServiceImpl implements CpinfoService {
         String password = reqDTO.getPassword();
         CpInfo cpInfo = this.cpInfoHandler.queryOne(reqDTO);
         if (cpInfo == null) {
-            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误" );
+            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误", null);
             return -1;
         } else {
             String userPass = cpInfo.getUserPass();
@@ -55,20 +55,20 @@ public class CpinfoServiceImpl implements CpinfoService {
                 String googleSecret = cpInfo.getGoogleSecret();
                 if (StringUtils.isNotEmpty(googleSecret)) {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
-                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空" );
+                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空", null);
                         return -2;
                     }
 
                     GoogleAuthenticator ga = new GoogleAuthenticator();
                     boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
-                    TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误" );
+                    TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
 
                     if (!b) {
                         return -2;
                     }
                 }
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功");
-
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", cpInfo.getTgId());
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", null);
                 LoginLog loginLog = new LoginLog();
                 loginLog.setAppId(cpInfo.getAppId());
                 loginLog.setLogType("登录");
@@ -96,14 +96,14 @@ public class CpinfoServiceImpl implements CpinfoService {
         if (cpInfo == null) {
             response.put("code", -1);
             response.put("msg", "登录账号不存在");
-            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
+            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
             return response;
         } else {
             boolean isTrue = cpInfo.getUserPass().equals(password);
             if (!isTrue) {
                 response.put("code", -1);
                 response.put("msg", "密码错误");
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
                 return response;
             } else {
                 String googleSecret = cpInfo.getGoogleSecret();
@@ -111,7 +111,7 @@ public class CpinfoServiceImpl implements CpinfoService {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
                         response.put("code", -1);
                         response.put("msg", "请输入谷歌验证码");
-                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
+                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
                         return response;
                     } else {
                         GoogleAuthenticator ga = new GoogleAuthenticator();
@@ -119,10 +119,11 @@ public class CpinfoServiceImpl implements CpinfoService {
                         if (!b) {
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
                             return response;
                         } else {
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功");
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功",null);
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功",cpInfo.getTgId());
                             response.put("code", 1);
                             response.put("msg", "密码和谷歌验证码正确");
                             LoginLog loginLog = new LoginLog();

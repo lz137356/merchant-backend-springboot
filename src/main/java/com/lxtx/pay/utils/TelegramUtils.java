@@ -1,6 +1,7 @@
 package com.lxtx.pay.utils;
 
 import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,18 +15,22 @@ public class TelegramUtils {
     //wanda
 //    private static String sendMsgUrl = "https://api.telegram.org/bot8179171938:AAE8UQVjOTU8gPt7BuuSdZktrfQw07cQHyg/sendMessage";
 //    private static String groupId = "-1002441663065";
-private static String sendMsgUrl = "https://api.telegram.org/bot7997170381:AAGfq--0NChOYxXWnfGYLCVTiJ1mAeNzhxM/sendMessage";
-    private static String groupId = "-1002419019732";
+    private static String sendMsgUrl = "https://api.telegram.org/bot7997170381:AAGfq--0NChOYxXWnfGYLCVTiJ1mAeNzhxM/sendMessage";
+    private static String groupIdx = "-1002419019732";
 
-    public static boolean reply(String content) {
+    public static boolean reply(String content, String groupId) {
+        String groupIdTmp=groupIdx;
         System.out.println("Telegram reply: " + content);
+        if (!StringUtils.isEmpty(groupId)) {
+            groupIdTmp = groupId;
+        }
         try {
             // 清理 Markdown 内容中的下划线
             content = content.replace("_", "");
 
             // 构造参数
             StringBuilder postData = new StringBuilder();
-            postData.append("chat_id=").append(URLEncoder.encode(groupId, "UTF-8"));
+            postData.append("chat_id=").append(URLEncoder.encode(groupIdTmp, "UTF-8"));
             postData.append("&text=").append(URLEncoder.encode(content, "UTF-8"));
             postData.append("&parse_mode=").append(URLEncoder.encode("Markdown", "UTF-8"));
 
@@ -67,7 +72,7 @@ private static String sendMsgUrl = "https://api.telegram.org/bot7997170381:AAGfq
     // 示例调用
     public static void main(String[] args) {
         String apiUrl = "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage";
-        boolean result = reply("Hello from bot");
+        boolean result = reply("Hello from bot",null);
         System.out.println("Message sent: " + result);
     }
 }
