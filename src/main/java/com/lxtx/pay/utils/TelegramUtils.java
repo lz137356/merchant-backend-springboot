@@ -11,9 +11,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class TelegramUtils {
-    private static String sendMsgUrl = "https://api.telegram.org/bot8179171938:AAE8UQVjOTU8gPt7BuuSdZktrfQw07cQHyg/sendMessage";
-    private static String groupId = "-1002441663065";
-
+    //wanda
+//    private static String sendMsgUrl = "https://api.telegram.org/bot8179171938:AAE8UQVjOTU8gPt7BuuSdZktrfQw07cQHyg/sendMessage";
+//    private static String groupId = "-1002441663065";
+private static String sendMsgUrl = "https://api.telegram.org/bot7997170381:AAGfq--0NChOYxXWnfGYLCVTiJ1mAeNzhxM/sendMessage";
+    private static String groupId = "-1002419019732";
 
     public static boolean reply(String content) {
         System.out.println("Telegram reply: " + content);
