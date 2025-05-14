@@ -16,6 +16,7 @@ import com.lxtx.pay.pojo.LoginLog;
 import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.utils.CommonUtil;
 import com.lxtx.pay.utils.GoogleAuthenticator;
+import com.lxtx.pay.utils.TelegramUtils;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
@@ -90,12 +91,14 @@ public class CpinfoServiceImpl implements CpinfoService {
         if (cpInfo == null) {
             response.put("code", -1);
             response.put("msg", "登录账号不存在");
+            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
             return response;
         } else {
             boolean isTrue = cpInfo.getUserPass().equals(password);
             if (!isTrue) {
                 response.put("code", -1);
                 response.put("msg", "密码错误");
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
                 return response;
             } else {
                 String googleSecret = cpInfo.getGoogleSecret();
@@ -103,6 +106,7 @@ public class CpinfoServiceImpl implements CpinfoService {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
                         response.put("code", -1);
                         response.put("msg", "请输入谷歌验证码");
+                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
                         return response;
                     } else {
                         GoogleAuthenticator ga = new GoogleAuthenticator();
@@ -110,8 +114,10 @@ public class CpinfoServiceImpl implements CpinfoService {
                         if (!b) {
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString());
                             return response;
                         } else {
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功");
                             response.put("code", 1);
                             response.put("msg", "密码和谷歌验证码正确");
                             LoginLog loginLog = new LoginLog();
@@ -139,6 +145,34 @@ public class CpinfoServiceImpl implements CpinfoService {
                 }
             }
         }
+    }
+
+    public static String getRemortIP(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        String realIp = request.getHeader("CF-Connecting-IP");
+        System.out.println("getRemortIP:" + ip + "--realIp--" + realIp);
+        if (org.apache.commons.lang.StringUtils.isNotEmpty(realIp)) {
+            ip = realIp;
+        }
+        if (isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            //多次反向代理后会有多个ip值，第一个ip才是真实ip
+            int index = ip.indexOf(",");
+            if (index != -1) {
+                return ip.substring(0, index);
+            } else {
+                return ip;
+            }
+        }
+        ip = request.getHeader("X-Real-IP");
+        if (isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return ip;
+        }
+
+        return request.getRemoteAddr();
+    }
+
+    private static boolean isNotEmpty(String s) {
+        return s != null && s.length() > 0;
     }
 
     @Override
