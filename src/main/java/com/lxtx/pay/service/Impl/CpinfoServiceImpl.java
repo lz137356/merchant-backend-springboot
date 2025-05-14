@@ -47,6 +47,7 @@ public class CpinfoServiceImpl implements CpinfoService {
         String password = reqDTO.getPassword();
         CpInfo cpInfo = this.cpInfoHandler.queryOne(reqDTO);
         if (cpInfo == null) {
+            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误" );
             return -1;
         } else {
             String userPass = cpInfo.getUserPass();
@@ -54,15 +55,19 @@ public class CpinfoServiceImpl implements CpinfoService {
                 String googleSecret = cpInfo.getGoogleSecret();
                 if (StringUtils.isNotEmpty(googleSecret)) {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
+                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空" );
                         return -2;
                     }
 
                     GoogleAuthenticator ga = new GoogleAuthenticator();
                     boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
+                    TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误" );
+
                     if (!b) {
                         return -2;
                     }
                 }
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功");
 
                 LoginLog loginLog = new LoginLog();
                 loginLog.setAppId(cpInfo.getAppId());
