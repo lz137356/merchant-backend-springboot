@@ -20,17 +20,20 @@ import com.lxtx.pay.utils.TelegramUtils;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.text.ParseException;
 import java.util.Base64;
 
+@Slf4j
 @Service
 public class CpinfoServiceImpl implements CpinfoService {
     @Autowired
@@ -257,6 +260,38 @@ public class CpinfoServiceImpl implements CpinfoService {
         resultJson.put("appId", cpInfo.getAppId());
         resultJson.put("googleSecret", cpInfo.getGoogleSecret());
         return resultJson;
+    }
+
+    @Override
+    public JSONObject getHomePageInfo(HttpServletRequest request) {
+
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+
+        String payFeeRate = cpInfo.getPayFeeRate().multiply(new BigDecimal(100)) + "%";
+        String payFeeFix = new BigDecimal(cpInfo.getPayFeeFix()).multiply(new BigDecimal("0.01")) + "";
+
+        String withdrawFeeRate = cpInfo.getWithdrawFeeRate().multiply(new BigDecimal(100)) + "%";
+        String withdrawFeeFix = new BigDecimal(cpInfo.getWithdrawFeeFix()).multiply(new BigDecimal("0.01")) + "";
+
+        JSONObject result = new JSONObject();
+        result.put("key", cpInfo.getKey());
+        result.put("payFeeRate", payFeeRate);
+        result.put("payFeeFix", payFeeFix);
+        result.put("withdrawFeeRate", withdrawFeeRate);
+        result.put("withdrawFeeFix", withdrawFeeFix);
+
+        int appId = cpInfo.getAppId();
+        CpInfo info = cpInfoHandler.select(appId);
+        String publicKey = info.getPublicKey();
+        log.info(cpInfo.getAppId() + " " + publicKey);
+
+        if (StringUtils.isEmpty(publicKey)) {
+            result.put("hasPublicKey", false);
+        }else {
+            result.put("hasPublicKey", true);
+        }
+
+        return result;
     }
 
     @Override

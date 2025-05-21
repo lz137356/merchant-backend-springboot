@@ -42,5 +42,6 @@ public class CpInfo {
     private Long FrozenRemain;
     private String googleSecret;
     private String country;
+    private String publicKey;
     private String tgId;
 }

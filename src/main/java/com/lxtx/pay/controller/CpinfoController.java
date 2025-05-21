@@ -135,4 +135,10 @@ public class CpinfoController {
         return Result.success(googleSecret);
     }
 
+    @RequestMapping("/getHomePageInfo")
+    @ResponseBody
+    public JSONObject getHomePageInfo(HttpServletRequest request) {
+        return Result.success(cpinfoService.getHomePageInfo(request));
+    }
+
 }
