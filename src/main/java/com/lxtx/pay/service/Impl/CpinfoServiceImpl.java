@@ -12,6 +12,7 @@ import com.lxtx.pay.dto.CpinfoReqDTO;
 import com.lxtx.pay.handler.CpInfoHandler;
 import com.lxtx.pay.handler.LoginLogHandler;
 import com.lxtx.pay.pojo.CpInfo;
+import com.lxtx.pay.pojo.FailInfo;
 import com.lxtx.pay.pojo.LoginLog;
 import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.utils.CommonUtil;
@@ -29,7 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class CpinfoServiceImpl implements CpinfoService {
@@ -37,17 +41,34 @@ public class CpinfoServiceImpl implements CpinfoService {
     private CpInfoHandler cpInfoHandler;
     @Autowired
     private LoginLogHandler loginLogHandler;
+    // key: username, value: FailInfo
+    private final Map<String, FailInfo> loginFailMap = new ConcurrentHashMap<>();
 
     public CpinfoServiceImpl() {
     }
 
     @Override
     public int login(HttpServletRequest request, CpinfoReqDTO reqDTO) {
+        LocalDate today = LocalDate.now();
+        // 获取失败信息
+        FailInfo failInfo = loginFailMap.get(reqDTO.getUsername());
+        if (failInfo != null) {
+            if (failInfo.getLastFailDate().equals(today) && failInfo.getCount() >= 5) {
+                try {
+                    TelegramUtils.reply("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+
+                return -1;
+            }
+        }
         String userName = reqDTO.getUsername();
         String password = reqDTO.getPassword();
         CpInfo cpInfo = this.cpInfoHandler.queryOne(reqDTO);
         if (cpInfo == null) {
             TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误", null);
+            setUlserLoginCatch(failInfo, reqDTO.getUsername());
             return -1;
         } else {
             String userPass = cpInfo.getUserPass();
@@ -56,13 +77,14 @@ public class CpinfoServiceImpl implements CpinfoService {
                 if (StringUtils.isNotEmpty(googleSecret)) {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
                         TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空", null);
+                        setUlserLoginCatch(failInfo, reqDTO.getUsername());
                         return -2;
                     }
 
                     GoogleAuthenticator ga = new GoogleAuthenticator();
                     boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
                     TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
-
+                    setUlserLoginCatch(failInfo, reqDTO.getUsername());
                     if (!b) {
                         return -2;
                     }
@@ -80,50 +102,89 @@ public class CpinfoServiceImpl implements CpinfoService {
                 this.cpInfoHandler.setSessionId(cpInfo);
                 request.getSession().setAttribute("cpInfo", cpInfo);
                 request.getSession().setMaxInactiveInterval(21600);
+                // 登录成功：清除记录
+                if (loginFailMap.containsKey(userName))
+                    loginFailMap.remove(userName);
                 return 1;
             } else {
+                setUlserLoginCatch(failInfo, reqDTO.getUsername());
                 return 0;
             }
         }
     }
 
+
+    public void setUlserLoginCatch(FailInfo failInfo, String username) {
+        try {
+            if (failInfo == null || !failInfo.getLastFailDate().equals(LocalDate.now())) {
+                loginFailMap.put(username, new FailInfo(1, LocalDate.now()));
+            } else {
+                failInfo.setCount(failInfo.getCount() + 1);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     public JSONObject loginV2(HttpServletRequest request, CpinfoReqDTO reqDTO) {
         JSONObject response = new JSONObject();
+
+        LocalDate today = LocalDate.now();
+
+        // 获取失败信息
+        FailInfo failInfo = loginFailMap.get(reqDTO.getUsername());
+        if (failInfo != null) {
+            if (failInfo.getLastFailDate().equals(today) && failInfo.getCount() >= 5) {
+                try {
+                    TelegramUtils.reply("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+                response.put("code", -1);
+                response.put("msg", "登录账号异常");
+                return response;
+            }
+        }
         String username = reqDTO.getUsername();
         String password = reqDTO.getPassword();
         CpInfo cpInfo = this.cpInfoHandler.queryOne(reqDTO);
         if (cpInfo == null) {
+            setUlserLoginCatch(failInfo, reqDTO.getUsername());
             response.put("code", -1);
             response.put("msg", "登录账号不存在");
-            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
+            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
             return response;
         } else {
             boolean isTrue = cpInfo.getUserPass().equals(password);
             if (!isTrue) {
+                setUlserLoginCatch(failInfo, reqDTO.getUsername());
                 response.put("code", -1);
                 response.put("msg", "密码错误");
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
+                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                 return response;
             } else {
                 String googleSecret = cpInfo.getGoogleSecret();
                 if (StringUtils.isNotEmpty(googleSecret)) {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
+                        setUlserLoginCatch(failInfo, reqDTO.getUsername());
                         response.put("code", -1);
                         response.put("msg", "请输入谷歌验证码");
-                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
+                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                         return response;
                     } else {
                         GoogleAuthenticator ga = new GoogleAuthenticator();
                         boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
                         if (!b) {
+                            setUlserLoginCatch(failInfo, reqDTO.getUsername());
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(),null);
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                             return response;
                         } else {
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功",null);
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功",cpInfo.getTgId());
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
+                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
                             response.put("code", 1);
                             response.put("msg", "密码和谷歌验证码正确");
                             LoginLog loginLog = new LoginLog();
@@ -138,11 +199,13 @@ public class CpinfoServiceImpl implements CpinfoService {
                             this.cpInfoHandler.setSessionId(cpInfo);
                             request.getSession().setAttribute("cpInfo", cpInfo);
                             request.getSession().setMaxInactiveInterval(21600);
+                            if (loginFailMap.containsKey(username))
+                                loginFailMap.remove(username);
                             return response;
                         }
                     }
                 } else {
-
+                    setUlserLoginCatch(failInfo, reqDTO.getUsername());
                     request.getSession().setAttribute("cpInfo", cpInfo);
 
                     response.put("code", -2);
