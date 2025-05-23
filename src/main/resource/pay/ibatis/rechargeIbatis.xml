@@ -9,7 +9,7 @@
     <insert id="Recharge.insert" parameterClass="recharge">
         insert into recharge (appid, uamount, faitamount, paylogid, createtime, finishtime, rate, proof, operator,
         comment)
-        values (#appId#, #uAmount#, #faitAmount#, #payLogId#, #createTime#, #finishTime#, #rate#, #proof#, #operator#,
+        values (#appId#, #uAmount#, #faitAmount#, #payLogId#, now(), #finishTime#, #rate#, #proof#, #operator#,
         #comment#)
 
         <selectKey keyProperty="id" resultClass="long">

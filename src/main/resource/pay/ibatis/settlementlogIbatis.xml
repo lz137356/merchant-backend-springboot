@@ -10,7 +10,7 @@
         insert into settlementlog (id, appId, product, card, accountType, bankName, bankNetName, accountName, accountCounter, account,
         faitAmount, uAmount, proof, status, createTime, finishTime, rate, operator, comment)
         values (null, #appId#,#product#,#card#,#accountType#,#bankName#,#bankNetName#,#accountName#, #accountCounter# ,  #account#,
-        #faitAmount#, 0, '', 0, #createTime#, null, 0,
+        #faitAmount#, 0, '', 0, now(), null, 0,
         0, #comment#)
         <selectKey keyProperty="id" resultClass="long">
             select LAST_INSERT_ID() as id

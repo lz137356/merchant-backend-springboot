@@ -32,4 +32,6 @@ public interface CpinfoService {
 
     JSONObject getGoogleSecret(HttpServletRequest var1);
 
+    JSONObject getHomePageInfo(HttpServletRequest request);
+
 }
