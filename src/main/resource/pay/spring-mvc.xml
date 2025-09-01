@@ -70,6 +70,7 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
             <mvc:mapping path="/**" />
             <!-- 需排除拦截的地址 -->
             <mvc:exclude-mapping path="/pay/cpinfo/login"/>
+            <mvc:exclude-mapping path="/pay/cpinfo/login_v3"/>
             <mvc:exclude-mapping path="/static/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/pay/css/**"/>
