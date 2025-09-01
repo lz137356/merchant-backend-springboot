@@ -1,5 +1,6 @@
 package com.lxtx.pay.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.lxtx.pay.dto.CheckPasswordReqDTO;
 import com.lxtx.pay.dto.CpHomeStaticticsReqDTO;
@@ -13,6 +14,7 @@ import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -66,6 +68,28 @@ public class CpinfoController {
     @ResponseBody
     public JSONObject login(HttpServletRequest request, HttpServletResponse response, CpinfoReqDTO reqDTO) throws IOException {
         return this.cpinfoService.loginV2(request, reqDTO);
+    }
+
+    @RequestMapping({"/login_v3"})
+    @ResponseBody
+    public JSONObject login_v3(HttpServletRequest request, @RequestBody String body) throws IOException {
+        JSONObject bodyJson = JSON.parseObject(body);
+
+        String token = bodyJson.getString("token");
+
+        String verifyCode = bodyJson.getString("inputVerifyCode");
+
+        boolean b = cpinfoService.checkVerifyCode(token, verifyCode);
+        if (!b) {
+            return Result.fail("验证码错误");
+        }
+
+        CpinfoReqDTO cpinfoReqDTO = new CpinfoReqDTO();
+        cpinfoReqDTO.setUsername(bodyJson.getString("username"));
+        cpinfoReqDTO.setPassword(bodyJson.getString("password"));
+        cpinfoReqDTO.setGoogleCode(bodyJson.getString("googleCode"));
+
+        return this.cpinfoService.loginV2(request, cpinfoReqDTO);
     }
 
     @RequestMapping("/logout")
@@ -139,6 +163,27 @@ public class CpinfoController {
     @ResponseBody
     public JSONObject getHomePageInfo(HttpServletRequest request) {
         return Result.success(cpinfoService.getHomePageInfo(request));
+    }
+
+    @RequestMapping("/generateToken")
+    @ResponseBody
+    public JSONObject generateToken(HttpServletRequest request) {
+
+        JSONObject token = cpinfoService.generateToken();
+        if (token != null) {
+            return Result.success(token);
+        }
+
+        return Result.fail("生成验证码错误");
+    }
+
+    @RequestMapping("/checkExistGoogle")
+    @ResponseBody
+    public JSONObject checkExistGoogle(String username) {
+
+        boolean existGoogle = cpinfoService.checkExistGoogle(username);
+        return Result.success(existGoogle);
+
     }
 
 }

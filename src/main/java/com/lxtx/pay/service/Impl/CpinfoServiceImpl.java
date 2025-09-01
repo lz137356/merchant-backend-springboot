@@ -14,10 +14,12 @@ import com.lxtx.pay.handler.LoginLogHandler;
 import com.lxtx.pay.pojo.CpInfo;
 import com.lxtx.pay.pojo.FailInfo;
 import com.lxtx.pay.pojo.LoginLog;
+import com.lxtx.pay.pojo.VerifyCodeEntry;
 import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.utils.CommonUtil;
 import com.lxtx.pay.utils.GoogleAuthenticator;
 import com.lxtx.pay.utils.TelegramUtils;
+import com.lxtx.pay.utils.VerificationCodeGenerator;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
@@ -35,7 +37,11 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -47,7 +53,17 @@ public class CpinfoServiceImpl implements CpinfoService {
     // key: username, value: FailInfo
     private final Map<String, FailInfo> loginFailMap = new ConcurrentHashMap<>();
 
+    private final Map<String, VerifyCodeEntry> tokenAndVerifyCodeMap = new ConcurrentHashMap<>();
+
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
     public CpinfoServiceImpl() {
+
+        // 定期清理过期的验证码条目
+        scheduler.scheduleAtFixedRate(() -> {
+            long now = System.currentTimeMillis();
+            tokenAndVerifyCodeMap.entrySet().removeIf(entry -> entry.getValue().getExpireAt() < now);
+        }, 1, 1, TimeUnit.MINUTES);
     }
 
     @Override
@@ -350,12 +366,54 @@ public class CpinfoServiceImpl implements CpinfoService {
 
         if (StringUtils.isEmpty(publicKey)) {
             result.put("hasPublicKey", false);
-        }else {
+        } else {
             result.put("hasPublicKey", true);
         }
 
         return result;
     }
+
+    @Override
+    public JSONObject generateToken() {
+        VerificationCodeGenerator.VerificationCodeResult result = VerificationCodeGenerator.generateVerificationCode();
+
+        String uuidToken = UUID.randomUUID().toString();
+
+        long expireAt = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后过期
+        tokenAndVerifyCodeMap.put(uuidToken, new VerifyCodeEntry(result.getCode(), expireAt));
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", uuidToken);
+        jsonObject.put("base64Image", "data:image/png;base64," + result.getBase64Image());
+
+        return jsonObject;
+    }
+
+    @Override
+    public boolean checkExistGoogle(String username) {
+        CpinfoReqDTO cpinfoReqDTO = new CpinfoReqDTO();
+        cpinfoReqDTO.setUsername(username);
+
+        CpInfo cpInfo = cpInfoHandler.queryOne(cpinfoReqDTO);
+        return cpInfo != null && StringUtils.isNotEmpty(cpInfo.getGoogleSecret());
+    }
+
+    @Override
+    public boolean checkVerifyCode(String uuid, String verifyCode) {
+        VerifyCodeEntry verifyCodeEntry = tokenAndVerifyCodeMap.get(uuid);
+
+        String code = verifyCodeEntry.getCode();
+        long expireAt = verifyCodeEntry.getExpireAt();
+
+        if (System.currentTimeMillis() <= expireAt && code.equalsIgnoreCase(verifyCode)) {
+            // 验证通过后移除，防止重复使用
+            tokenAndVerifyCodeMap.remove(uuid);
+            return true;
+        }
+
+        return false;
+    }
+
 
     @Override
     public JSONObject createCpInfoSecret(HttpServletRequest request) {
@@ -369,7 +427,7 @@ public class CpinfoServiceImpl implements CpinfoService {
             request.getSession().removeAttribute("cpInfo");
             JSONObject data = new JSONObject();
             data.put("googleSecret", secretKey);
-            data.put("qrBarcode", "otpauth://totp/goopay?secret=" + secretKey + "&issuer=snapay");
+            data.put("qrBarcode", "otpauth://totp/inshoppay?secret=" + secretKey + "&issuer=inshoppay");
             return data;
         } else {
             return null;
@@ -455,4 +513,5 @@ public class CpinfoServiceImpl implements CpinfoService {
             return null;
         }
     }
+
 }

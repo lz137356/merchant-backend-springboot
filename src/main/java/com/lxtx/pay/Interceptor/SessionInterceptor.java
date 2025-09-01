@@ -39,6 +39,16 @@ public class SessionInterceptor implements HandlerInterceptor {
             // 放行
             return true;
         }
+
+        if (requestURI.contains("/cpinfo/generateToken")) {
+            // 放行
+            return true;
+        }
+
+        if (requestURI.contains("/cpinfo/checkExistGoogle")) {
+            // 放行
+            return true;
+        }
         CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
 
         if (cpInfo == null) {

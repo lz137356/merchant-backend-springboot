@@ -34,4 +34,10 @@ public interface CpinfoService {
 
     JSONObject getHomePageInfo(HttpServletRequest request);
 
+    JSONObject generateToken();
+
+    boolean checkExistGoogle(String username);
+
+    boolean checkVerifyCode(String uuid, String verifyCode);
+
 }
