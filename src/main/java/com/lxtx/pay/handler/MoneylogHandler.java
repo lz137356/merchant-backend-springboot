@@ -24,5 +24,4 @@ public class MoneylogHandler extends SimpleIbatisEntityHandler<Moneylog> {
     public List<MoneyLogExportVO> exportExcelMoneyLogList(MoneyLogReqDTO reqDTO) {
         return queryForList("exportExcelMoneyLogList", reqDTO);
     }
-
 }

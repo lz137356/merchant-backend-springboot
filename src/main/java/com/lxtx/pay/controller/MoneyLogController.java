@@ -6,6 +6,7 @@ import com.lxtx.pay.pojo.CpInfo;
 import com.lxtx.pay.pojo.Result;
 import com.lxtx.pay.service.MoneyLogService;
 import com.lxtx.pay.vo.MoneyLogVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/pay/moneylog")
 public class MoneyLogController {
@@ -36,20 +38,27 @@ public class MoneyLogController {
 
 
     @RequestMapping("/export")
-    public void exportPayLog(HttpServletRequest request, HttpServletResponse response, MoneyLogReqDTO reqDTO) throws NoSuchFieldException, IllegalAccessException, IOException, IOException {
-        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
-        reqDTO.setAppId(String.valueOf(cpInfo.getAppId()));
+    public void exportMoneyLogZip(HttpServletRequest request, HttpServletResponse response, MoneyLogReqDTO reqDTO)
+            throws IOException {
 
-        HSSFWorkbook sheets = moneyLogService.exportExcelMoneyList(reqDTO);
-        OutputStream outputStream = response.getOutputStream();
+        try {
+            // 获取商户信息
+            CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+            if (cpInfo == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("未授权访问");
+                return;
+            }
 
-        response.reset();
-        // 设定输出文件头
-        response.setHeader("Content-disposition",
-                "attachment; filename=" + new String("MoneyExport".getBytes("GB2312"), "8859_1") + ".xls");
-        // 定义输出类型
-        response.setContentType("application/x-download");
-        response.setCharacterEncoding("UTF-8");
-        sheets.write(outputStream);
+            reqDTO.setAppId(String.valueOf(cpInfo.getAppId()));
+
+            // 使用ZIP导出
+            moneyLogService.exportZipMoneyList(reqDTO, response);
+
+        } catch (Exception e) {
+            log.error("导出ZIP资金流水失败", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("导出失败：" + e.getMessage());
+        }
     }
 }

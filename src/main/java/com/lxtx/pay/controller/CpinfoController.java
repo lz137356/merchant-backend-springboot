@@ -167,7 +167,7 @@ public class CpinfoController {
 
     @RequestMapping("/generateToken")
     @ResponseBody
-    public JSONObject generateToken(HttpServletRequest request) {
+    public JSONObject generateToken() {
 
         JSONObject token = cpinfoService.generateToken();
         if (token != null) {

@@ -74,7 +74,7 @@ public class CpinfoServiceImpl implements CpinfoService {
         if (failInfo != null) {
             if (failInfo.getLastFailDate().equals(today) && failInfo.getCount() >= 5) {
                 try {
-                    TelegramUtils.reply("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
+                    TelegramUtils.replyAsync("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -86,7 +86,7 @@ public class CpinfoServiceImpl implements CpinfoService {
         String password = reqDTO.getPassword();
         CpInfo cpInfo = this.cpInfoHandler.queryOne(reqDTO);
         if (cpInfo == null) {
-            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误", null);
+            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),用户信息错误", null);
             setUlserLoginCatch(failInfo, reqDTO.getUsername());
             return -1;
         } else {
@@ -95,21 +95,21 @@ public class CpinfoServiceImpl implements CpinfoService {
                 String googleSecret = cpInfo.getGoogleSecret();
                 if (StringUtils.isNotEmpty(googleSecret)) {
                     if (StringUtils.isEmpty(reqDTO.getGoogleCode())) {
-                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空", null);
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码为空", null);
                         setUlserLoginCatch(failInfo, reqDTO.getUsername());
                         return -2;
                     }
 
                     GoogleAuthenticator ga = new GoogleAuthenticator();
                     boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
-                    TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
+                    TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
                     setUlserLoginCatch(failInfo, reqDTO.getUsername());
                     if (!b) {
                         return -2;
                     }
                 }
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", cpInfo.getTgId());
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", null);
+                TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", cpInfo.getTgId());
+                TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", null);
                 LoginLog loginLog = new LoginLog();
                 loginLog.setAppId(cpInfo.getAppId());
                 loginLog.setLogType("登录");
@@ -157,7 +157,7 @@ public class CpinfoServiceImpl implements CpinfoService {
         if (failInfo != null) {
             if (failInfo.getLastFailDate().equals(today) && failInfo.getCount() >= 5) {
                 try {
-                    TelegramUtils.reply("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
+                    TelegramUtils.replyAsync("用户(" + reqDTO.getUsername() + ")频繁登录，登录次数大于5次，IP:" + getRemortIP(request) + ",若不是我方用户请拉黑处理～", null);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -173,7 +173,7 @@ public class CpinfoServiceImpl implements CpinfoService {
             setUlserLoginCatch(failInfo, reqDTO.getUsername());
             response.put("code", -1);
             response.put("msg", "登录账号不存在");
-            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
+            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
             return response;
         } else {
             boolean isTrue = cpInfo.getUserPass().equals(password);
@@ -181,7 +181,7 @@ public class CpinfoServiceImpl implements CpinfoService {
                 setUlserLoginCatch(failInfo, reqDTO.getUsername());
                 response.put("code", -1);
                 response.put("msg", "密码错误");
-                TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
+                TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                 return response;
             } else {
                 String googleSecret = cpInfo.getGoogleSecret();
@@ -190,7 +190,7 @@ public class CpinfoServiceImpl implements CpinfoService {
                         setUlserLoginCatch(failInfo, reqDTO.getUsername());
                         response.put("code", -1);
                         response.put("msg", "请输入谷歌验证码");
-                        TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                         return response;
                     } else {
                         GoogleAuthenticator ga = new GoogleAuthenticator();
@@ -199,11 +199,11 @@ public class CpinfoServiceImpl implements CpinfoService {
                             setUlserLoginCatch(failInfo, reqDTO.getUsername());
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
+                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                             return response;
                         } else {
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
-                            TelegramUtils.reply("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
+                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
+                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
                             response.put("code", 1);
                             response.put("msg", "密码和谷歌验证码正确");
                             LoginLog loginLog = new LoginLog();
@@ -236,27 +236,47 @@ public class CpinfoServiceImpl implements CpinfoService {
     }
 
     public static String getRemortIP(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        String realIp = request.getHeader("CF-Connecting-IP");
-        System.out.println("getRemortIP:" + ip + "--realIp--" + realIp);
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(realIp)) {
-            ip = realIp;
+        String userIP = request.getHeader("userIP"); // Cloudflare优先
+        if (StringUtils.isNotEmpty(userIP) && !"unKnown".equalsIgnoreCase(userIP)) {
+            return getFirstIp(userIP);
         }
-        if (isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
-            //多次反向代理后会有多个ip值，第一个ip才是真实ip
-            int index = ip.indexOf(",");
-            if (index != -1) {
-                return ip.substring(0, index);
-            } else {
-                return ip;
-            }
+
+        String ip = request.getHeader("CF-Connecting-IP"); // Cloudflare优先
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return getFirstIp(ip);
         }
+
+        ip = request.getHeader("X-Forwarded-For");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return getFirstIp(ip);
+        }
+
         ip = request.getHeader("X-Real-IP");
-        if (isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return ip;
+        }
+
+        ip = request.getHeader("Proxy-Client-IP");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
+            return ip;
+        }
+
+        ip = request.getHeader("WL-Proxy-Client-IP");
+        if (StringUtils.isNotEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)) {
             return ip;
         }
 
         return request.getRemoteAddr();
+    }
+
+    private static String getFirstIp(String ip) {
+        if (ip == null || ip.length() == 0) {
+            return ip;
+        }
+
+        // 处理多个IP的情况（如：192.168.1.1, 192.168.1.2）
+        String[] ips = ip.split("\\s*,\\s*");
+        return ips[0];
     }
 
     private static boolean isNotEmpty(String s) {
@@ -375,16 +395,23 @@ public class CpinfoServiceImpl implements CpinfoService {
 
     @Override
     public JSONObject generateToken() {
-        VerificationCodeGenerator.VerificationCodeResult result = VerificationCodeGenerator.generateVerificationCode();
-
-        String uuidToken = UUID.randomUUID().toString();
-
-        long expireAt = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后过期
-        tokenAndVerifyCodeMap.put(uuidToken, new VerifyCodeEntry(result.getCode(), expireAt));
-
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("token", uuidToken);
-        jsonObject.put("base64Image", "data:image/png;base64," + result.getBase64Image());
+        System.out.println("生成验证码");
+
+        try {
+            VerificationCodeGenerator.VerificationCodeResult result = VerificationCodeGenerator.generateVerificationCode();
+            System.out.println("验证码: " + result);
+
+            String uuidToken = UUID.randomUUID().toString();
+
+            long expireAt = System.currentTimeMillis() + 5 * 60 * 1000; // 5分钟后过期
+            tokenAndVerifyCodeMap.put(uuidToken, new VerifyCodeEntry(result.getCode(), expireAt));
+
+            jsonObject.put("token", uuidToken);
+            jsonObject.put("base64Image", "data:image/png;base64," + result.getBase64Image());
+        }catch (Exception e) {
+            log.error("e: ", e);
+        }
 
         return jsonObject;
     }
