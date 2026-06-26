@@ -100,18 +100,13 @@ public class CpinfoServiceImpl implements CpinfoService {
                         return -2;
                     }
 
-                    // 本地测试模式：如果验证码为 000000 则跳过验证
-                    if ("000000".equals(reqDTO.getGoogleCode())) {
-                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),使用测试验证码登录", null);
-                        // 继续执行登录成功逻辑
-                    } else {
-                        GoogleAuthenticator ga = new GoogleAuthenticator();
-                        boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
+                    // 验证谷歌验证码
+                    GoogleAuthenticator ga = new GoogleAuthenticator();
+                    boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
+                    if (!b) {
                         TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
                         setUlserLoginCatch(failInfo, reqDTO.getUsername());
-                        if (!b) {
-                            return -2;
-                        }
+                        return -2;
                     }
                 }
                 TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", cpInfo.getTgId());
@@ -206,23 +201,18 @@ public class CpinfoServiceImpl implements CpinfoService {
                         TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                         return response;
                     } else {
+                        // 验证谷歌验证码
                         GoogleAuthenticator ga = new GoogleAuthenticator();
                         boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
-                        if (!b && !"000000".equals(reqDTO.getGoogleCode())) {
+                        if (!b) {
                             setUlserLoginCatch(failInfo, reqDTO.getUsername());
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
                             TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                             return response;
                         }
-                        // 验证通过（正常验证或测试验证码 000000）
-                        if ("000000".equals(reqDTO.getGoogleCode())) {
-                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),使用测试验证码登录", null);
-                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),使用测试验证码登录", cpInfo.getTgId());
-                        } else {
-                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
-                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
-                        }
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
                     }
                     // 登录成功公共逻辑
                     response.put("code", 0);

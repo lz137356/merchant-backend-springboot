@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/pay/recharge")
@@ -34,7 +35,8 @@ public class RechargeController {
 
         String recharge_token = request.getHeader("recharge_token");
         Object session_recharge_token = request.getSession().getAttribute("recharge_token");
-        logger.info(session_recharge_token + ":" + recharge_token);
+        // 不记录敏感 token 信息，仅记录操作
+        logger.info("Recharge addOne called, token validation performed");
 
 //        if (session_recharge_token == null || !recharge_token.equals(session_recharge_token + "")) {
 //            return Result.fail("禁止重复提交");
@@ -60,7 +62,11 @@ public class RechargeController {
 
     @RequestMapping("/makeToken")
     public JSONObject makeToken(HttpServletRequest request) {
-        String token = System.currentTimeMillis() + new Random().nextInt(9999999) + "";
+        // 使用加密安全的随机数生成器生成 token
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] tokenBytes = new byte[32];
+        secureRandom.nextBytes(tokenBytes);
+        String token = Base64.getEncoder().encodeToString(tokenBytes);
         request.getSession().setAttribute("recharge_token", token);
         return Result.success("success", token);
     }

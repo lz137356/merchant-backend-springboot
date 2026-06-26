@@ -94,12 +94,9 @@ private Integer appId;
         return "User{" +
                 "userId=" + userId +
                 ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", salt='" + salt + '\'' +
-                ", role='" + role + '\'' +
-                ", logintime=" + logintime +
+                ", role=" + role +
                 ", status=" + status +
-                ", createtime=" + createtime +
+                ", appId=" + appId +
                 '}';
     }
 }
