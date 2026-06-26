@@ -11,7 +11,11 @@ import com.lxtx.pay.dto.CpInfoSettingReqDTO;
 import com.lxtx.pay.dto.CpinfoReqDTO;
 import com.lxtx.pay.handler.CpInfoHandler;
 import com.lxtx.pay.handler.LoginLogHandler;
+import com.lxtx.pay.handler.LoginLogNewHandler;
+import com.lxtx.pay.handler.OnlineUserHandler;
 import com.lxtx.pay.pojo.CpInfo;
+import com.lxtx.pay.pojo.LoginLogNew;
+import com.lxtx.pay.pojo.OnlineUser;
 import com.lxtx.pay.pojo.FailInfo;
 import com.lxtx.pay.pojo.LoginLog;
 import com.lxtx.pay.pojo.VerifyCodeEntry;
@@ -50,6 +54,10 @@ public class CpinfoServiceImpl implements CpinfoService {
     private CpInfoHandler cpInfoHandler;
     @Autowired
     private LoginLogHandler loginLogHandler;
+    @Autowired
+    private LoginLogNewHandler loginLogNewHandler;
+    @Autowired
+    private OnlineUserHandler onlineUserHandler;
     // key: username, value: FailInfo
     private final Map<String, FailInfo> loginFailMap = new ConcurrentHashMap<>();
 
@@ -144,7 +152,55 @@ public class CpinfoServiceImpl implements CpinfoService {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * 记录新的登录日志（login_log 表）
+     */
+    private void recordLoginLog(HttpServletRequest request, CpInfo cpInfo, int status, String message) {
+        try {
+            LoginLogNew loginLog = new LoginLogNew();
+            loginLog.setAppId(cpInfo.getAppId());
+            loginLog.setUserName(cpInfo.getUserName());
+            loginLog.setLoginIp(CommonUtil.getRemortIP(request));
+            loginLog.setStatus(status);
+            loginLog.setMessage(message);
+            loginLog.setLoginType("web");
+            loginLog.setUserAgent(request.getHeader("User-Agent"));
+            loginLog.setSessionId(request.getSession().getId());
+            this.loginLogNewHandler.add(loginLog);
+        } catch (Exception e) {
+            log.error("记录登录日志失败", e);
+        }
+    }
+
+    /**
+     * 记录在线用户（online_user 表）
+     */
+    private void recordOnlineUser(HttpServletRequest request, CpInfo cpInfo) {
+        try {
+            String sessionId = request.getSession().getId();
+            OnlineUser existingUser = onlineUserHandler.findBySessionId(sessionId);
+
+            if (existingUser != null) {
+                // 更新最后活跃时间
+                onlineUserHandler.updateLastActiveTime(sessionId);
+            } else {
+                // 新增在线用户
+                OnlineUser onlineUser = new OnlineUser();
+                onlineUser.setAppId(cpInfo.getAppId());
+                onlineUser.setUserName(cpInfo.getUserName());
+                onlineUser.setSessionId(sessionId);
+                onlineUser.setLoginIp(CommonUtil.getRemortIP(request));
+                onlineUser.setUserAgent(request.getHeader("User-Agent"));
+                onlineUser.setLoginTime(new java.util.Date());
+                onlineUser.setLastActiveTime(new java.util.Date());
+                onlineUser.setStatus(0); // 在线
+                this.onlineUserHandler.add(onlineUser);
+            }
+        } catch (Exception e) {
+            log.error("记录在线用户失败", e);
+        }
     }
 
     @Override
@@ -217,6 +273,14 @@ public class CpinfoServiceImpl implements CpinfoService {
                     // 登录成功公共逻辑
                     response.put("code", 0);
                     response.put("msg", "登录成功");
+
+                    // 记录新的登录日志
+                    recordLoginLog(request, cpInfo, 0, "登录成功");
+
+                    // 记录在线用户
+                    recordOnlineUser(request, cpInfo);
+
+                    // 保留旧的登录日志兼容
                     LoginLog loginLog = new LoginLog();
                     loginLog.setAppId(cpInfo.getAppId());
                     loginLog.setLogType("登录");
@@ -224,6 +288,7 @@ public class CpinfoServiceImpl implements CpinfoService {
                     loginLog.setOperationTarget("盘口");
                     loginLog.setRemoteIp(CommonUtil.getRemortIP(request));
                     this.loginLogHandler.add(loginLog);
+
                     cpInfo.setSessionId(request.getSession().getId());
                     response.put("data", request.getSession().getId());
                     this.cpInfoHandler.setSessionId(cpInfo);

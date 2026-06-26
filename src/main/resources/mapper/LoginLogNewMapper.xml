@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.LoginLogNewHandler">
+
+    <insert id="insert" parameterType="com.lxtx.pay.pojo.LoginLogNew">
+        INSERT INTO login_log (
+            app_id, user_name, login_ip, status, message,
+            login_type, user_agent, session_id
+        ) VALUES (
+            #{appId}, #{userName}, #{loginIp}, #{status}, #{message},
+            #{loginType}, #{userAgent}, #{sessionId}
+        )
+    </insert>
+
+    <select id="findByPage" parameterType="java.util.Map" resultType="com.lxtx.pay.pojo.LoginLogNew">
+        SELECT * FROM login_log
+        WHERE 1=1
+        <if test="appId != null">
+            AND app_id = #{appId}
+        </if>
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="loginType != null and loginType != ''">
+            AND login_type = #{loginType}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{rowIndex}, #{limit}
+    </select>
+
+    <select id="countTotal" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM login_log
+        WHERE 1=1
+        <if test="appId != null">
+            AND app_id = #{appId}
+        </if>
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="loginType != null and loginType != ''">
+            AND login_type = #{loginType}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+</mapper>

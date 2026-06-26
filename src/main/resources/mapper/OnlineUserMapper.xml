@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.OnlineUserHandler">
+
+    <insert id="insert" parameterType="com.lxtx.pay.pojo.OnlineUser">
+        INSERT INTO online_user (
+            app_id, user_name, session_id, login_ip, user_agent,
+            login_time, last_active_time, status
+        ) VALUES (
+            #{appId}, #{userName}, #{sessionId}, #{loginIp}, #{userAgent},
+            #{loginTime}, #{lastActiveTime}, #{status}
+        )
+    </insert>
+
+    <update id="updateBySessionId" parameterType="com.lxtx.pay.pojo.OnlineUser">
+        UPDATE online_user SET
+            app_id = #{appId},
+            user_name = #{userName},
+            login_ip = #{loginIp},
+            user_agent = #{userAgent},
+            last_active_time = #{lastActiveTime},
+            status = #{status}
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <update id="updateLastActiveTime" parameterType="string">
+        UPDATE online_user SET
+            last_active_time = NOW()
+        WHERE session_id = #{sessionId}
+    </update>
+
+    <delete id="deleteBySessionId" parameterType="string">
+        DELETE FROM online_user WHERE session_id = #{sessionId}
+    </delete>
+
+    <select id="findBySessionId" parameterType="string" resultType="com.lxtx.pay.pojo.OnlineUser">
+        SELECT * FROM online_user WHERE session_id = #{sessionId}
+    </select>
+
+    <select id="findByPage" parameterType="java.util.Map" resultType="com.lxtx.pay.pojo.OnlineUser">
+        SELECT * FROM online_user
+        WHERE 1=1
+        <if test="appId != null">
+            AND app_id = #{appId}
+        </if>
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY last_active_time DESC
+        LIMIT #{rowIndex}, #{limit}
+    </select>
+
+    <select id="countTotal" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM online_user
+        WHERE 1=1
+        <if test="appId != null">
+            AND app_id = #{appId}
+        </if>
+        <if test="userName != null and userName != ''">
+            AND user_name = #{userName}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+</mapper>

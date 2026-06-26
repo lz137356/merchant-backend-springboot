@@ -1,5 +1,6 @@
 package com.lxtx.pay.config;
 
+import com.lxtx.pay.Interceptor.OperationLogInterceptor;
 import com.lxtx.pay.Interceptor.SessionInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private PlatformProperties platformProperties;
 
+    @Autowired
+    private OperationLogInterceptor operationLogInterceptor;
+
     @Value("${cors.allowed-origins:http://localhost:9999,http://127.0.0.1:9999}")
     private String corsAllowedOrigins;
 
@@ -29,6 +33,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 会话拦截器
         registry.addInterceptor(sessionInterceptor())
                 .addPathPatterns("/**")
                 .excludePathPatterns(
@@ -42,6 +47,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/paylog/exportPayLogHistory",
                         "/withdrawlog/exportWithdrawLog",
                         "/moneylog/export"
+                );
+
+        // 操作日志拦截器
+        registry.addInterceptor(operationLogInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/pay/cpinfo/login",
+                        "/pay/cpinfo/login_v3",
+                        "/pay/cpinfo/checkExistGoogle",
+                        "/pay/cpinfo/generateToken",
+                        "/pay/cpinfo/createGoogleSecretPublic"
                 );
     }
 
