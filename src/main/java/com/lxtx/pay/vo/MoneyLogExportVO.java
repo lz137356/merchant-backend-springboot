@@ -21,13 +21,13 @@ public class MoneyLogExportVO {
     private String sceneInfo;
 
     @ExcelHeader(value = "交易前金额")
-    private Long frontMoney;
+    private String frontMoney;
 
     @ExcelHeader(value = "交易金额")
-    private Long money;
+    private String money;
 
     @ExcelHeader(value = "交易后金额")
-    private Long queenMoney;
+    private String queenMoney;
 
     @ExcelHeader(value = "关联单号")
     private String orderId;

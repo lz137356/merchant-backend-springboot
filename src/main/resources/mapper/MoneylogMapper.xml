@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.MoneylogHandler">
+    <insert id="insert" parameterType="com.lxtx.pay.pojo.Moneylog">
+        insert into moneylog (id, type, sceneinfo, frontmoney, money, queenmoney, details, createtime, appid, notes)
+        values (null, #{Type}, #{SceneInfo}, #{FrontMoney}, #{Money}, #{QueenMoney}, #{Details}, #{CreateTime}, #{AppId},
+                #{Notes})
+    </insert>
+    <select id="getAll" resultType="com.lxtx.pay.pojo.Moneylog">
+        select *
+        from moneylog
+    </select>
+
+    <select id="queryMoneyLogPageList" parameterType="com.lxtx.pay.dto.MoneyLogReqDTO"
+            resultType="com.lxtx.pay.vo.MoneyLogVO">
+        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid,notes
+        from moneylog m
+        where AppId = #{appId}
+        <if test="id != null">
+            and Id=#{id}
+        </if>
+        <if test="type != null">
+            and Type=#{type}
+        </if>
+        <if test="sceneInfo != null and sceneInfo != ''">
+            and SceneInfo=#{sceneInfo}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            and m.CreateTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            and m.CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and OrderId=#{orderId}
+        </if>
+        <if test="money != null">
+            and Money=#{money}
+        </if>
+        order by CreateTime desc
+        <if test="rowIndex != null">
+            limit ${rowIndex},${limit}
+        </if>
+    </select>
+    <select id="queryMoneyLogPageListCount" parameterType="com.lxtx.pay.dto.MoneyLogReqDTO" resultType="int">
+        select count(Id) from moneylog m
+        where AppId = #{appId}
+        <if test="id != null">
+            and Id=#{id}
+        </if>
+        <if test="type != null">
+            and Type=#{type}
+        </if>
+        <if test="sceneInfo != null and sceneInfo != ''">
+            and SceneInfo=#{sceneInfo}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            and m.CreateTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            and m.CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and OrderId=#{orderId}
+        </if>
+        <if test="money != null">
+            and Money=#{money}
+        </if>
+    </select>
+
+    <select id="exportExcelMoneyLogList" resultType="com.lxtx.pay.vo.MoneyLogExportVO"
+            parameterType="com.lxtx.pay.dto.MoneyLogReqDTO">
+        select id, type, sceneinfo, frontmoney, money, queenmoney, createtime, appid, orderid, logid
+        from moneylog m
+        where AppId = #{appId}
+        <if test="id != null">
+            and Id=#{id}
+        </if>
+        <if test="type != null">
+            and Type=#{type}
+        </if>
+        <if test="sceneInfo != null and sceneInfo != ''">
+            and SceneInfo=#{sceneInfo}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            and m.CreateTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            and m.CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and OrderId=#{orderId}
+        </if>
+        <if test="money != null">
+            and Money=#{money}
+        </if>
+        order by id desc
+    </select>
+</mapper>

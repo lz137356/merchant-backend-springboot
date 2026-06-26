@@ -10,9 +10,11 @@ import com.lxtx.pay.vo.RechargeVO;
 import com.lxtx.pay.vo.SettlementLogStatisticsVO;
 import com.lxtx.pay.vo.SettlementLogVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class RechargeHandler extends SimpleIbatisEntityHandler<Recharge> {
 
     public Long insertRecharge(Recharge recharge){

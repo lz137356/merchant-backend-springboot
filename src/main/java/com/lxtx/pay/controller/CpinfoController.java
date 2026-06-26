@@ -2,6 +2,7 @@ package com.lxtx.pay.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.lxtx.pay.config.PlatformProperties;
 import com.lxtx.pay.dto.CheckPasswordReqDTO;
 import com.lxtx.pay.dto.CpHomeStaticticsReqDTO;
 import com.lxtx.pay.dto.CpInfoSettingReqDTO;
@@ -12,6 +13,7 @@ import com.lxtx.pay.service.CpinfoService;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.lxtx.pay.vo.CpInfoRemainVO;
 import com.lxtx.pay.vo.CpInfoSettingVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +32,9 @@ public class CpinfoController {
 
     @Autowired
     private CpinfoService cpinfoService;
+
+    @Autowired
+    private PlatformProperties platformProperties;
 
     @RequestMapping("/changePassword")
     @ResponseBody
@@ -66,8 +71,32 @@ public class CpinfoController {
 
     @RequestMapping({"/login"})
     @ResponseBody
-    public JSONObject login(HttpServletRequest request, HttpServletResponse response, CpinfoReqDTO reqDTO) throws IOException {
-        return this.cpinfoService.loginV2(request, reqDTO);
+    public JSONObject login(HttpServletRequest request, HttpServletResponse response,
+                            @RequestBody(required = false) String body,
+                            CpinfoReqDTO reqDTO) throws IOException {
+        // 根据 platform.version 配置区分前端版本
+        if (platformProperties.isV6()) {
+            // v6 (vvpay): JSON 格式，需要验证码
+            if (body == null || body.isEmpty()) {
+                return Result.fail("请求体不能为空");
+            }
+            JSONObject json = JSON.parseObject(body);
+            String token = json.getString("token");
+            String inputVerifyCode = json.getString("inputVerifyCode");
+            if (StringUtils.isNotEmpty(token) && StringUtils.isNotEmpty(inputVerifyCode)) {
+                if (!cpinfoService.checkVerifyCode(token, inputVerifyCode)) {
+                    return Result.fail("验证码错误");
+                }
+            }
+            CpinfoReqDTO dto = new CpinfoReqDTO();
+            dto.setUsername(json.getString("username"));
+            dto.setPassword(json.getString("password"));
+            dto.setGoogleCode(json.getString("googleCode"));
+            return this.cpinfoService.loginV2(request, dto);
+        } else {
+            // v5 (velopay): 表单提交
+            return this.cpinfoService.loginV2(request, reqDTO);
+        }
     }
 
     @RequestMapping({"/login_v3"})
@@ -150,6 +179,38 @@ public class CpinfoController {
         return Result.success(cpInfoSettingVO);
     }
 
+    /**
+     * VVPay (v6) 使用 /me 替代 /getSessionCpInfo，字段命名略有不同
+     */
+    @RequestMapping("/me")
+    @ResponseBody
+    public JSONObject me(HttpServletRequest request) {
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+        if (cpInfo == null) {
+            return Result.fail("未登录");
+        }
+        // 复用 getSessionCpInfo 逻辑，但添加 userNo 字段兼容 v6
+        JSONObject result = new JSONObject();
+        result.put("userNo", cpInfo.getAppId());  // v6 使用 userNo
+        result.put("appId", cpInfo.getAppId());
+        result.put("key", cpInfo.getKey());
+        result.put("googleSecret", cpInfo.getGoogleSecret());
+        result.put("userName", cpInfo.getUserName());
+        result.put("country", cpInfo.getCountry());
+
+        String payFeeRate = cpInfo.getPayFeeRate().multiply(new BigDecimal(100)) + "%";
+        String payFeeFix = new BigDecimal(cpInfo.getPayFeeFix()).multiply(new BigDecimal("0.01")) + "";
+        String withdrawFeeRate = cpInfo.getWithdrawFeeRate().multiply(new BigDecimal(100)) + "%";
+        String withdrawFeeFix = new BigDecimal(cpInfo.getWithdrawFeeFix()).multiply(new BigDecimal("0.01")) + "";
+
+        result.put("payFeeRate", payFeeRate);
+        result.put("payFeeFix", payFeeFix);
+        result.put("withdrawFeeRate", withdrawFeeRate);
+        result.put("withdrawFeeFix", withdrawFeeFix);
+
+        return Result.success(result);
+    }
+
 
     @RequestMapping("/getGoogleSecret")
     @ResponseBody
@@ -184,6 +245,36 @@ public class CpinfoController {
         boolean existGoogle = cpinfoService.checkExistGoogle(username);
         return Result.success(existGoogle);
 
+    }
+
+    /**
+     * VVPay (v6) 公共谷歌密钥创建端点（登录前使用）
+     */
+    @RequestMapping("/createGoogleSecretPublic")
+    @ResponseBody
+    public JSONObject createGoogleSecretPublic(@RequestBody String body) {
+        JSONObject json = JSON.parseObject(body);
+        String username = json.getString("username");
+        String password = json.getString("password");
+        String token = json.getString("token");
+        String inputVerifyCode = json.getString("inputVerifyCode");
+
+        // 校验验证码
+        if (StringUtils.isNotEmpty(token) && StringUtils.isNotEmpty(inputVerifyCode)) {
+            if (!cpinfoService.checkVerifyCode(token, inputVerifyCode)) {
+                return Result.fail("验证码错误");
+            }
+        }
+
+        // 校验用户名密码
+        CpinfoReqDTO reqDTO = new CpinfoReqDTO();
+        reqDTO.setUsername(username);
+        reqDTO.setPassword(password);
+        JSONObject result = cpinfoService.createCpInfoSecret(reqDTO);
+        if (result == null) {
+            return Result.fail("用户名或密码错误");
+        }
+        return Result.success(result);
     }
 
 }

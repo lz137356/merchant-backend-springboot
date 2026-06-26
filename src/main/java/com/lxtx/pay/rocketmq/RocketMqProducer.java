@@ -1,25 +1,34 @@
 package com.lxtx.pay.rocketmq;
 
-
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.UnsupportedEncodingException;
 
+@Component
 public class RocketMqProducer {
 
     private final static Logger logger = LoggerFactory.getLogger(RocketMqProducer.class);
 
     private static DefaultMQProducer defaultMQProducer;
+
+    @Value("${rocketmq.producer.producer-group:PushConsumer}")
     private String producerGroup;
+
+    @Value("${rocketmq.producer.namesrv-addr:127.0.0.1:9876}")
     private String namesrvAddr;
 
     /**
      * Spring bean init-method
      */
+    @PostConstruct
     public void init() throws MQClientException {
         // 参数信息
         logger.info("DefaultMQProducer initialize!");
@@ -36,20 +45,14 @@ public class RocketMqProducer {
     /**
      * Spring bean destroy-method
      */
+    @PreDestroy
     public void destroy() {
-        defaultMQProducer.shutdown();
+        if (defaultMQProducer != null) {
+            defaultMQProducer.shutdown();
+        }
     }
     public DefaultMQProducer getDefaultMQProducer() {
         return defaultMQProducer;
-    }
-    // ---------------setter -----------------
-
-    public void setProducerGroup(String producerGroup) {
-        this.producerGroup = producerGroup;
-    }
-
-    public void setNamesrvAddr(String namesrvAddr) {
-        this.namesrvAddr = namesrvAddr;
     }
 
     /**

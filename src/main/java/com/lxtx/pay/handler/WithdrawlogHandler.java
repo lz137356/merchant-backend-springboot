@@ -8,10 +8,12 @@ import com.lxtx.pay.vo.WithdrawLogExportVO;
 import com.lxtx.pay.vo.WithdrawLogStaticticsVO;
 import com.lxtx.pay.vo.WithdrawLogVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class WithdrawlogHandler extends SimpleIbatisEntityHandler<Withdrawlog> {
 
    /* public String querywithdeawlog(Withdrawlog withdrawlog ) {

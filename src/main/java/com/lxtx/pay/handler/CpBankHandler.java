@@ -2,10 +2,12 @@ package com.lxtx.pay.handler;
 
 import com.lxtx.pay.pojo.CpBank;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class CpBankHandler extends SimpleIbatisEntityHandler<CpBank> {
 
       public List<CpBank> querycpbank(Map map){

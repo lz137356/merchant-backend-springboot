@@ -6,9 +6,11 @@ import com.lxtx.pay.vo.PayLogStaticticsVO;
 import com.lxtx.pay.vo.PayLogVo;
 import com.lxtx.pay.vo.PaylogExportVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class PaylogHandler extends SimpleIbatisEntityHandler<Paylog> {
 
     public Long insertPayLog(Paylog paylog) {

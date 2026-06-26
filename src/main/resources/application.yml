@@ -1,0 +1,88 @@
+spring:
+  application:
+    name: merchant-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 1GB
+      max-request-size: 1GB
+  profiles:
+    active: ${PLATFORM_PROFILE:tk}
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  type-aliases-package: com.lxtx.pay.pojo,com.lxtx.pay.vo,com.lxtx.pay.dto
+
+server:
+  port: ${SERVER_PORT:8081}
+  servlet:
+    context-path: /
+
+rocketmq:
+  producer:
+    producer-group: ${ROCKETMQ_PRODUCER_GROUP:PushConsumer}
+    namesrv-addr: ${ROCKETMQ_NAMESRV_ADDR:127.0.0.1:9876}
+
+logging:
+  level:
+    com.lxtx.pay.mapper: DEBUG
+
+---
+# 本地开发配置 (默认)
+spring:
+  config:
+    activate:
+      on-profile: tk
+  datasource:
+    url: jdbc:mysql://localhost:3306/vboot-java?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 10
+
+platform:
+  version: v5
+  name: tk
+
+---
+# Velo平台配置
+spring:
+  config:
+    activate:
+      on-profile: velo
+  datasource:
+    url: jdbc:mysql://uppay.cbum24q4c10g.ap-south-1.rds.amazonaws.com:3306/vboot-java?program_name=velopay&useUnicode=true&characterEncoding=GBK&useLocalSessionState=true&lower_case_table_names=1
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: wandaNXTYY12
+    password: HGG6!yggrhIIiIhtfFEWgsSQW!
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 10
+
+platform:
+  version: v5
+  name: velo
+
+---
+# VVPay (v6) 平台配置
+spring:
+  config:
+    activate:
+      on-profile: v6
+  datasource:
+    url: jdbc:mysql://newpay0404.cbum24q4c10g.ap-south-1.rds.amazonaws.com:3306/vboot-java?program_name=vvpay&useUnicode=true&characterEncoding=GBK&useLocalSessionState=true&lower_case_table_names=1
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: pay0404
+    password: sRvsHNJY84Qw9diBjFjJ
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 10
+
+platform:
+  version: v6
+  name: vvpay

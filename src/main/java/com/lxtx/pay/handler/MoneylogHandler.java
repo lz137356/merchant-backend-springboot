@@ -7,10 +7,12 @@ import com.lxtx.pay.vo.MoneyLogExportVO;
 import com.lxtx.pay.vo.MoneyLogVO;
 import com.lxtx.pay.vo.PaylogExportVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class MoneylogHandler extends SimpleIbatisEntityHandler<Moneylog> {
 
     public List<MoneyLogVO> queryMoneyLogPageList(MoneyLogReqDTO reqDTO) {

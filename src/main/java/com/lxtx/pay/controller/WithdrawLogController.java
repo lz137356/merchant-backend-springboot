@@ -42,6 +42,7 @@ public class WithdrawLogController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("list", withdrawLogVoList);
         jsonObject.put("statictics", withdrawLogStaticticsVO);
+        jsonObject.put("statistics", withdrawLogStaticticsVO);
         return Result.success(jsonObject);
     }
 

@@ -3,10 +3,12 @@ package com.lxtx.pay.handler;
 import com.lxtx.pay.pojo.Cpstat;
 import com.lxtx.pay.utils.PageUtils;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class CpstatHandler extends SimpleIbatisEntityHandler<Cpstat> {
 
 

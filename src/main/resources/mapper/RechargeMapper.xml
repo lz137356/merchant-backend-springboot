@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.RechargeHandler">
+<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.lxtx.pay.pojo.Recharge">
+        insert into recharge (appid, uamount, faitamount, paylogid, createtime, finishtime, rate, proof, operator,
+        comment)
+        values (#{appId}, #{uAmount}, #{faitAmount}, #{payLogId}, now(), #{finishTime}, #{rate}, #{proof}, #{operator},
+        #{comment})
+
+        
+    </insert>
+
+    <select id="queryRechargePageList" parameterType="com.lxtx.pay.dto.RechargeReqDTO"
+            resultType="com.lxtx.pay.vo.RechargeVO">
+        select
+        id, appid as appId, uamount, status, faitamount, paylogid, createtime, finishtime, rate, proof
+        from recharge
+        where appId = #{appId}
+        <if test="status != null">
+            and
+            status = #{status}
+        </if>
+        <if test="startCreateTime != null">
+            and
+            createTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null">
+            and
+            createTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startFinishTime != null">
+            and
+            finishTime &gt;= #{startFinishTime}
+        </if>
+        <if test="endFinishTime != null">
+            and
+            finishTime &lt;= #{endFinishTime}
+        </if>
+        order by CreateTime desc
+        <if test="rowIndex != null">
+            limit ${rowIndex},${limit}
+        </if>
+    </select>
+
+    <select id="queryRechargePageListStatistics" parameterType="com.lxtx.pay.dto.RechargeReqDTO"
+            resultType="com.lxtx.pay.vo.RechargeStatisticsVO">
+        select
+        count(*) as totalAllNum
+        from recharge
+        where appId = #{appId}
+        <if test="status != null">
+            and
+            status = #{status}
+        </if>
+        <if test="startCreateTime != null">
+            and
+            createTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null">
+            and
+            createTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startFinishTime != null">
+            and
+            finishTime &gt;= #{startFinishTime}
+        </if>
+        <if test="endFinishTime != null">
+            and
+            finishTime &lt;= #{endFinishTime}
+        </if>
+    </select>
+</mapper>

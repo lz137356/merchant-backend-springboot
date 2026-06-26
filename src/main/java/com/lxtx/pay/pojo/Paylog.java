@@ -1,7 +1,8 @@
 package com.lxtx.pay.pojo;
 
-import com.sun.istack.internal.Nullable;
 import lombok.Data;
+
+import javax.annotation.Nullable;
 
 import java.io.Serializable;
 import java.util.Date;

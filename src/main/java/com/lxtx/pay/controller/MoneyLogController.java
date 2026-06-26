@@ -1,6 +1,7 @@
 package com.lxtx.pay.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.lxtx.pay.config.PlatformProperties;
 import com.lxtx.pay.dto.MoneyLogReqDTO;
 import com.lxtx.pay.pojo.CpInfo;
 import com.lxtx.pay.pojo.Result;
@@ -26,6 +27,9 @@ public class MoneyLogController {
     @Autowired
     private MoneyLogService moneyLogService;
 
+    @Autowired
+    private PlatformProperties platformProperties;
+
 
     @RequestMapping("/queryMoneyLogPageList")
     public JSONObject queryMoneyLogPageList(HttpServletRequest request, MoneyLogReqDTO reqDTO) {
@@ -38,27 +42,30 @@ public class MoneyLogController {
 
 
     @RequestMapping("/export")
-    public void exportMoneyLogZip(HttpServletRequest request, HttpServletResponse response, MoneyLogReqDTO reqDTO)
-            throws IOException {
+    public void exportMoneyLog(HttpServletRequest request, HttpServletResponse response, MoneyLogReqDTO reqDTO)
+            throws Exception {
+        CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
+        if (cpInfo == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=utf-8");
+            int code = platformProperties.isV6() ? 40100 : 444;
+            JSONObject json = new JSONObject();
+            json.put("code", code);
+            json.put("msg", "login error");
+            response.getWriter().print(json);
+            return;
+        }
 
-        try {
-            // 获取商户信息
-            CpInfo cpInfo = (CpInfo) request.getSession().getAttribute("cpInfo");
-            if (cpInfo == null) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("未授权访问");
-                return;
-            }
-
-            reqDTO.setAppId(String.valueOf(cpInfo.getAppId()));
-
-            // 使用ZIP导出
-            moneyLogService.exportZipMoneyList(reqDTO, response);
-
-        } catch (Exception e) {
-            log.error("导出ZIP资金流水失败", e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("导出失败：" + e.getMessage());
+        reqDTO.setAppId(String.valueOf(cpInfo.getAppId()));
+        HSSFWorkbook sheets = moneyLogService.exportExcelMoneyLogList(reqDTO);
+        response.reset();
+        response.setHeader("Content-disposition",
+                "attachment; filename=" + new String("MoneyFlowExport".getBytes("GB2312"), "8859_1") + ".xls");
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("UTF-8");
+        try (OutputStream outputStream = response.getOutputStream()) {
+            sheets.write(outputStream);
+            outputStream.flush();
         }
     }
 }

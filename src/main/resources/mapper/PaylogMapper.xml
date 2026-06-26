@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.PaylogHandler">
+
+    <resultMap id="PayLogVoResult" type="com.lxtx.pay.vo.PayLogVo">
+        <id column="Id" property="id"/>
+        <result column="AppId" property="appId"/>
+        <result column="OrderId" property="orderId"/>
+        <result column="Amount" property="amount"/>
+        <result column="Type" property="type"/>
+        <result column="CallbackUrl" property="callbackUrl"/>
+        <result column="NotifyUrl" property="notifyUrl"/>
+        <result column="Status" property="status"/>
+        <result column="CreateTime" property="createTime"/>
+        <result column="PayTime" property="payTime"/>
+        <result column="PayTypeId" property="payTypeId"/>
+        <result column="SyncCnt" property="syncCnt"/>
+        <result column="PlatformFee" property="platformFee"/>
+        <result column="CreateDay" property="createDay"/>
+        <result column="PayDay" property="payDay"/>
+        <result column="Currency" property="currency"/>
+        <result column="Ip" property="ip"/>
+        <result column="ValidDay" property="validDay"/>
+        <result column="ValidStatus" property="validStatus"/>
+        <result column="clabe" property="clabe"/>
+        <result column="rastreo" property="rastreo"/>
+    </resultMap>
+
+    <select id="queryPayLogPageList" resultMap="PayLogVoResult">
+        SELECT
+            Id,
+            AppId,
+            OrderId,
+            Amount,
+            Type,
+            CallbackUrl,
+            NotifyUrl,
+            Status,
+            CreateTime,
+            PayTime,
+            PayTypeId,
+            SyncCnt,
+            PlatformFee,
+            CreateDay,
+            PayDay,
+            Currency,
+            Ip,
+            ValidDay,
+            ValidStatus,
+            clabe,
+            rastreo
+        FROM paylog
+        WHERE 1 = 1
+        <if test="appId != null and appId != ''">
+            AND AppId = #{appId}
+        </if>
+        <if test="id != null">
+            AND Id = #{id}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            AND OrderId LIKE CONCAT('%', #{orderId}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND Status = #{status}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            AND CreateTime >= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            AND CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startPayTime != null and startPayTime != ''">
+            AND PayTime >= #{startPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            AND PayTime &lt;= #{endPayTime}
+        </if>
+        ORDER BY CreateTime DESC
+        <if test="rowIndex != null and limit != null">
+            LIMIT #{rowIndex}, #{limit}
+        </if>
+    </select>
+
+    <select id="countTotal" resultType="int">
+        SELECT COUNT(*) FROM paylog
+        WHERE 1 = 1
+        <if test="appId != null and appId != ''">
+            AND AppId = #{appId}
+        </if>
+        <if test="id != null">
+            AND Id = #{id}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            AND OrderId LIKE CONCAT('%', #{orderId}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND Status = #{status}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            AND CreateTime >= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            AND CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startPayTime != null and startPayTime != ''">
+            AND PayTime >= #{startPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            AND PayTime &lt;= #{endPayTime}
+        </if>
+    </select>
+
+    <select id="queryPayLogPageListStatictics" resultType="com.lxtx.pay.vo.PayLogStaticticsVO">
+        SELECT
+            IFNULL(SUM(Amount), 0) AS needPayAmount,
+            SUM(IF(Status = 1, Amount, 0)) AS payAmount,
+            SUM(IF(Status = 1, PlatformFee, 0)) AS payFee,
+            SUM(IF(Status = 1, 1, 0)) AS payNum,
+            COUNT(*) AS allPayNum
+        FROM paylog
+        WHERE 1 = 1
+        <if test="appId != null and appId != ''">
+            AND AppId = #{appId}
+        </if>
+        <if test="id != null">
+            AND Id = #{id}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            AND OrderId LIKE CONCAT('%', #{orderId}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND Status = #{status}
+        </if>
+        <if test="startCreateTime != null and startCreateTime != ''">
+            AND CreateTime >= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null and endCreateTime != ''">
+            AND CreateTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startPayTime != null and startPayTime != ''">
+            AND PayTime >= #{startPayTime}
+        </if>
+        <if test="endPayTime != null and endPayTime != ''">
+            AND PayTime &lt;= #{endPayTime}
+        </if>
+    </select>
+
+</mapper>

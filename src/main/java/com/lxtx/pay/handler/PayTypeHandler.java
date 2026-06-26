@@ -2,7 +2,9 @@ package com.lxtx.pay.handler;
 
 import com.lxtx.pay.pojo.PayType;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PayTypeHandler extends SimpleIbatisEntityHandler<PayType> {
     public int deleteById(int id){
         int delete = super.delete(id);

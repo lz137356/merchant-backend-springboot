@@ -7,9 +7,11 @@ import com.lxtx.pay.dto.CpinfoReqDTO;
 import com.lxtx.pay.pojo.CpInfo;
 import com.lxtx.pay.vo.CpHomeStaticticsVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class CpInfoHandler extends SimpleIbatisEntityHandler<CpInfo> {
 
     public int frozenCpInfoRemain(CpInfoFrozenRemainReqDTO reqDTO) {

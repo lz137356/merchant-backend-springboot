@@ -53,6 +53,7 @@ public class PayLogController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("list", payLogVoList);
         jsonObject.put("statictics", payLogStaticticsVO);
+        jsonObject.put("statistics", payLogStaticticsVO);
         return Result.success(jsonObject);
     }
 
@@ -85,6 +86,7 @@ public class PayLogController {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("list", payLogVoList);
         jsonObject.put("statictics", payLogStaticticsVO);
+        jsonObject.put("statistics", payLogStaticticsVO);
         return Result.success(jsonObject);
     }
 

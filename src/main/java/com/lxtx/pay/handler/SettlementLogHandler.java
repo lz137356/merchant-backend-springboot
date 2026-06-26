@@ -6,9 +6,11 @@ import com.lxtx.pay.utils.PageUtils;
 import com.lxtx.pay.vo.SettlementLogStatisticsVO;
 import com.lxtx.pay.vo.SettlementLogVO;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class SettlementLogHandler extends SimpleIbatisEntityHandler<SettlementLog> {
 
     public Long insertSettlementLog(SettlementLog settlementLog){

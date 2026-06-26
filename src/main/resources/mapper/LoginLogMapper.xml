@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.LoginLogHandler">
+
+    <insert id="insert" parameterType="com.lxtx.pay.pojo.LoginLog">
+        INSERT INTO loginlog (AppId, LogType, Details, OperationTarget, RemoteIp, CreateTime)
+        VALUES (#{appId}, #{logType}, #{details}, #{operationTarget}, #{remoteIp}, NOW())
+    </insert>
+
+    <select id="findByPage" parameterType="java.util.Map" resultType="com.lxtx.pay.pojo.LoginLog">
+        SELECT * FROM loginlog
+        WHERE 1=1
+        <if test="appId != null">
+            AND AppId = #{appId}
+        </if>
+        ORDER BY CreateTime DESC
+        LIMIT #{rowIndex}, #{limit}
+    </select>
+
+    <select id="countTotal" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(*) FROM loginlog
+        WHERE 1=1
+        <if test="appId != null">
+            AND AppId = #{appId}
+        </if>
+    </select>
+
+</mapper>

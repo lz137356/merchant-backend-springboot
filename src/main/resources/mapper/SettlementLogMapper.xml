@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.SettlementLogHandler">
+<insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.lxtx.pay.pojo.SettlementLog">
+        insert into settlementlog (id, appId, product, card, accountType, bankName, bankNetName, accountName, accountCounter, account,
+        faitAmount, uAmount, proof, status, createTime, finishTime, rate, operator, comment)
+        values (null, #{appId},#{product},#{card},#{accountType},#{bankName},#{bankNetName},#{accountName}, #{accountCounter} ,  #{account},
+        #{faitAmount}, 0, '', 0, now(), null, 0,
+        0, #{comment})
+        
+    </insert>
+
+    <select id="getAccountCounter" parameterType="string" resultType="int">
+        select count(1) from settlementlog where account = #{account}
+    </select>
+
+    <select id="querySettlementLogPageList" parameterType="com.lxtx.pay.dto.SettlementLogReqDTO"
+            resultType="com.lxtx.pay.vo.SettlementLogVO">
+        select id, appId, faitAmount, uAmount,account, proof, status, createTime, finishTime, rate
+        from settlementlog
+        where 1=1
+        <if test="appId != null">
+            and
+            appId = #{appId}
+        </if>
+        <if test="status != null">
+            and
+            status = #{status}
+        </if>
+        <if test="startCreateTime != null">
+            and
+            createTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null">
+            and
+            createTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startFinishTime != null">
+            and
+            finishTime &gt;= #{startFinishTime}
+        </if>
+        <if test="endFinishTime != null">
+            and
+            finishTime &lt;= #{endFinishTime}
+        </if>
+        order by CreateTime desc
+        <if test="rowIndex != null">
+            limit ${rowIndex},${limit}
+        </if>
+
+    </select>
+
+    <select id="querySettlementLogPageListStatistics"
+            parameterType="com.lxtx.pay.dto.SettlementLogReqDTO"
+            resultType="com.lxtx.pay.vo.SettlementLogStatisticsVO"
+    >
+        select count(if(status = 0,id,null)) as processedNum,
+        sum(if(status = 0,faitAmount,0)) as processedFiatAmount,
+        count(id) as totalAllNum,
+        sum(faitAmount) as totalFailAmount,
+        sum(uAmount) as totalUAmount
+        from settlementlog
+        where 1=1
+        <if test="appId != null">
+            and
+            appId = #{appId}
+        </if>
+        <if test="status != null">
+            and
+            status = #{status}
+        </if>
+        <if test="startCreateTime != null">
+            and
+            createTime &gt;= #{startCreateTime}
+        </if>
+        <if test="endCreateTime != null">
+            and
+            createTime &lt;= #{endCreateTime}
+        </if>
+        <if test="startFinishTime != null">
+            and
+            finishTime &gt;= #{startFinishTime}
+        </if>
+        <if test="endFinishTime != null">
+            and
+            finishTime &lt;= #{endFinishTime}
+        </if>
+    </select>
+</mapper>

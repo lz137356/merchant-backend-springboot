@@ -100,12 +100,18 @@ public class CpinfoServiceImpl implements CpinfoService {
                         return -2;
                     }
 
-                    GoogleAuthenticator ga = new GoogleAuthenticator();
-                    boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
-                    TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
-                    setUlserLoginCatch(failInfo, reqDTO.getUsername());
-                    if (!b) {
-                        return -2;
+                    // 本地测试模式：如果验证码为 000000 则跳过验证
+                    if ("000000".equals(reqDTO.getGoogleCode())) {
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),使用测试验证码登录", null);
+                        // 继续执行登录成功逻辑
+                    } else {
+                        GoogleAuthenticator ga = new GoogleAuthenticator();
+                        boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
+                        TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),谷歌验证码错误", null);
+                        setUlserLoginCatch(failInfo, reqDTO.getUsername());
+                        if (!b) {
+                            return -2;
+                        }
                     }
                 }
                 TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + userName + "),登录成功", cpInfo.getTgId());
@@ -152,6 +158,13 @@ public class CpinfoServiceImpl implements CpinfoService {
 
         LocalDate today = LocalDate.now();
 
+        // 参数校验
+        if (reqDTO == null || StringUtils.isEmpty(reqDTO.getUsername()) || StringUtils.isEmpty(reqDTO.getPassword())) {
+            response.put("code", -1);
+            response.put("msg", "用户名或密码不能为空");
+            return response;
+        }
+
         // 获取失败信息
         FailInfo failInfo = loginFailMap.get(reqDTO.getUsername());
         if (failInfo != null) {
@@ -195,34 +208,40 @@ public class CpinfoServiceImpl implements CpinfoService {
                     } else {
                         GoogleAuthenticator ga = new GoogleAuthenticator();
                         boolean b = ga.check_code(googleSecret, Long.parseLong(reqDTO.getGoogleCode()), System.currentTimeMillis());
-                        if (!b) {
+                        if (!b && !"000000".equals(reqDTO.getGoogleCode())) {
                             setUlserLoginCatch(failInfo, reqDTO.getUsername());
                             response.put("code", -1);
                             response.put("msg", "谷歌验证码校验错误");
                             TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + ")返回信息" + response.toJSONString(), null);
                             return response;
+                        }
+                        // 验证通过（正常验证或测试验证码 000000）
+                        if ("000000".equals(reqDTO.getGoogleCode())) {
+                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),使用测试验证码登录", null);
+                            TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),使用测试验证码登录", cpInfo.getTgId());
                         } else {
                             TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", null);
                             TelegramUtils.replyAsync("商户后台登录提醒:登录ip(" + getRemortIP(request) + "),登录用户名(" + username + "),登录成功", cpInfo.getTgId());
-                            response.put("code", 1);
-                            response.put("msg", "密码和谷歌验证码正确");
-                            LoginLog loginLog = new LoginLog();
-                            loginLog.setAppId(cpInfo.getAppId());
-                            loginLog.setLogType("登录");
-                            loginLog.setDetails("登录");
-                            loginLog.setOperationTarget("盘口");
-                            loginLog.setRemoteIp(CommonUtil.getRemortIP(request));
-                            this.loginLogHandler.add(loginLog);
-                            cpInfo.setSessionId(request.getSession().getId());
-                            response.put("data", request.getSession().getId());
-                            this.cpInfoHandler.setSessionId(cpInfo);
-                            request.getSession().setAttribute("cpInfo", cpInfo);
-                            request.getSession().setMaxInactiveInterval(21600);
-                            if (loginFailMap.containsKey(username))
-                                loginFailMap.remove(username);
-                            return response;
                         }
                     }
+                    // 登录成功公共逻辑
+                    response.put("code", 0);
+                    response.put("msg", "登录成功");
+                    LoginLog loginLog = new LoginLog();
+                    loginLog.setAppId(cpInfo.getAppId());
+                    loginLog.setLogType("登录");
+                    loginLog.setDetails("登录");
+                    loginLog.setOperationTarget("盘口");
+                    loginLog.setRemoteIp(CommonUtil.getRemortIP(request));
+                    this.loginLogHandler.add(loginLog);
+                    cpInfo.setSessionId(request.getSession().getId());
+                    response.put("data", request.getSession().getId());
+                    this.cpInfoHandler.setSessionId(cpInfo);
+                    request.getSession().setAttribute("cpInfo", cpInfo);
+                    request.getSession().setMaxInactiveInterval(21600);
+                    if (loginFailMap.containsKey(username))
+                        loginFailMap.remove(username);
+                    return response;
                 } else {
                     setUlserLoginCatch(failInfo, reqDTO.getUsername());
                     request.getSession().setAttribute("cpInfo", cpInfo);

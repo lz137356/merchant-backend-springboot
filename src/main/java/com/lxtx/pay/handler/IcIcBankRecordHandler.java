@@ -2,7 +2,9 @@ package com.lxtx.pay.handler;
 
 import com.lxtx.pay.pojo.IcIcBankRecord;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IcIcBankRecordHandler extends SimpleIbatisEntityHandler<IcIcBankRecord> {
 
     public int matchUtrToSuccess(IcIcBankRecord icIcBankRecord){

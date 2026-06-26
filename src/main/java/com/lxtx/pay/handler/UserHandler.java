@@ -3,10 +3,11 @@ package com.lxtx.pay.handler;
 import com.lxtx.pay.pojo.PayType;
 import com.lxtx.pay.pojo.User;
 import com.qlzf.commons.handler.SimpleIbatisEntityHandler;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
+@Component
 public class UserHandler extends SimpleIbatisEntityHandler<User> {
 
 public  User login(User user){

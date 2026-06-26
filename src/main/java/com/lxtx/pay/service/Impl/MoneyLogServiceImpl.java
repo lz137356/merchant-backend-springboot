@@ -3,9 +3,11 @@ package com.lxtx.pay.service.Impl;
 import com.lxtx.pay.dto.MoneyLogReqDTO;
 import com.lxtx.pay.handler.MoneylogHandler;
 import com.lxtx.pay.service.MoneyLogService;
+import com.lxtx.pay.utils.ExportUtils;
 import com.lxtx.pay.utils.PageUtils;
 import com.lxtx.pay.vo.MoneyLogExportVO;
 import com.lxtx.pay.vo.MoneyLogVO;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import com.opencsv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -73,6 +75,24 @@ public class MoneyLogServiceImpl implements MoneyLogService {
     }
 
     @Override
+    public HSSFWorkbook exportExcelMoneyLogList(MoneyLogReqDTO reqDTO) throws NoSuchFieldException, IllegalAccessException {
+        if (StringUtils.isNotEmpty(reqDTO.getMoney())) {
+            reqDTO.setMoney(new BigDecimal(reqDTO.getMoney()).multiply(new BigDecimal(100)).toString());
+        }
+
+        List<MoneyLogExportVO> rows = moneylogHandler.exportExcelMoneyLogList(reqDTO);
+        for (MoneyLogExportVO m : rows) {
+            String typeRaw = m.getType();
+            m.setType(convertType(typeRaw));
+            m.setSceneInfo(convertSceneInfo(m.getSceneInfo(), typeRaw));
+            m.setFrontMoney(formatMoney(parseMoney(m.getFrontMoney())));
+            m.setMoney(formatMoney(parseMoney(m.getMoney())));
+            m.setQueenMoney(formatMoney(parseMoney(m.getQueenMoney())));
+        }
+        return ExportUtils.exportExcel(rows, MoneyLogExportVO.class);
+    }
+
+    @Override
     public void exportZipMoneyList(MoneyLogReqDTO reqDTO, HttpServletResponse response) throws IOException {
         // 设置响应头
         response.setContentType("application/zip");
@@ -125,9 +145,9 @@ public class MoneyLogServiceImpl implements MoneyLogService {
                             m.getAppId() != null ? m.getAppId().toString() : "",
                             convertType(m.getType()),
                             convertSceneInfo(m.getSceneInfo(), m.getType()),
-                            formatMoney(m.getFrontMoney()),
-                            formatMoney(m.getMoney()),
-                            formatMoney(m.getQueenMoney()),
+                            formatMoney(parseMoney(m.getFrontMoney())),
+                            formatMoney(parseMoney(m.getMoney())),
+                            formatMoney(parseMoney(m.getQueenMoney())),
                             m.getOrderId() != null ? m.getOrderId() : "",
                             m.getCreateTime() != null ? m.getCreateTime() : ""
                     };
@@ -233,6 +253,17 @@ public class MoneyLogServiceImpl implements MoneyLogService {
         } catch (Exception e) {
             log.error("金额格式化失败: {}", money, e);
             return "0.00";
+        }
+    }
+
+    private Long parseMoney(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

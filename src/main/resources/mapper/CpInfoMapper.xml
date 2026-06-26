@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lxtx.pay.handler.CpInfoHandler">
+
+    <select id="select" parameterType="int" resultType="com.lxtx.pay.pojo.CpInfo">
+        select *
+        from cpinfo
+        where AppId = #{appId}
+    </select>
+
+    <update id="update" parameterType="com.lxtx.pay.pojo.CpInfo">
+        update cpinfo
+        set Status = #{status}
+        <if test="UserPass != null">
+            ,UserPass = #{UserPass}
+        </if>
+        where AppId = #{appId}
+    </update>
+
+    <update id="setSessionId" parameterType="com.lxtx.pay.pojo.CpInfo">
+        update cpinfo
+        set SessionId = #{SessionId}
+        where AppId = #{appId}
+    </update>
+
+    <select id="getAll" resultType="com.lxtx.pay.pojo.CpInfo">
+        select * from cpinfo
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="int">
+        delete from cpinfo where AppId = #{appId}
+    </delete>
+
+    <select id="cpinfoIsExist" resultType="com.lxtx.pay.pojo.CpInfo" parameterType="com.lxtx.pay.dto.CpinfoReqDTO">
+        select * from cpinfo where UserName = #{username}
+    </select>
+
+    <update id="frozenCpInfoRemain" parameterType="com.lxtx.pay.dto.CpInfoFrozenRemainReqDTO">
+        update cpinfo
+        set ActualRemain = ActualRemain - #{amount},
+            FrozenRemain = FrozenRemain + #{amount}
+        where AppId = #{appId}
+          and ActualRemain >= #{amount}
+    </update>
+
+    <update id="updateCpInfoGoogleSecret" parameterType="com.lxtx.pay.dto.CpInfoSettingReqDTO">
+        update cpinfo
+        set googleSecret = #{googleSecret}
+        where AppId = #{appId}
+    </update>
+
+    <update id="updateCpInfoPassword" parameterType="com.lxtx.pay.dto.CpInfoSettingReqDTO">
+        update cpinfo
+        set UserPass = #{passwordNew}
+        where AppId = #{appId}
+    </update>
+
+    <update id="updateCpInfoPaykey" parameterType="com.lxtx.pay.dto.CpInfoSettingReqDTO">
+        update cpinfo
+        set publicKey = #{publicKey}
+        where AppId = #{appId}
+    </update>
+
+    <select id="getCpPayHomeStatictics" parameterType="com.lxtx.pay.dto.CpHomeStaticticsReqDTO"
+            resultType="com.lxtx.pay.vo.CpHomeStaticticsVO">
+        SELECT SUM(a.Amount) AS totalPayAmount,
+               SUM(a.PlatformFee) AS totalPayFee,
+               COUNT(a.id) AS totalPayNum,
+               SUM(IF(a.PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                      a.Amount, 0)) AS todayPayAmount,
+               SUM(IF(a.PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                      a.PlatformFee, 0)) AS todayPayFee,
+               (SELECT COUNT(p.Id)
+                FROM paylog p
+                left join cpinfo c on p.AppId = c.AppId
+                WHERE p.`Status` = 1
+                  AND c.AppId != 10000
+                  and p.AppId = #{appId}
+                  AND PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+               ) as todayPayNum,
+               SUM(IF(a.PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND a.PayTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                  a.Amount, 0)) AS yesterdayPayAmount,
+               SUM(IF(a.PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND a.PayTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                  a.PlatformFee, 0)) AS yesterdayPayFee,
+               (SELECT COUNT(p.Id)
+                FROM paylog p
+                left join cpinfo c on p.AppId = c.AppId
+                WHERE p.`Status` = 1
+                  AND c.AppId != 10000
+                  and p.AppId = #{appId}
+                  AND PayTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND PayTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+               ) as yesterdayPayNum
+        FROM (SELECT id, p.appid, amount, paytime, platformfee, p.status, c.country
+              FROM paylog p
+              left join cpinfo c on p.AppId = c.AppId
+              WHERE p.`Status` = 1
+                AND c.AppId != 10000
+                and p.AppId = #{appId}
+             ) a
+    </select>
+
+    <select id="getCpWithdrawHomeStatictics" parameterType="com.lxtx.pay.dto.CpHomeStaticticsReqDTO"
+            resultType="com.lxtx.pay.vo.CpHomeStaticticsVO">
+        SELECT SUM(b.Amount) AS totalWithdrawAmount,
+               SUM(b.PlatformFee) AS totalWithdrawFee,
+               COUNT(b.id) AS totalWithdrawNum,
+               SUM(IF(b.CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                      b.Amount, 0)) AS todayWithdrawAmount,
+               SUM(IF(b.CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                      b.PlatformFee, 0)) AS todayWithdrawFee,
+               (SELECT COUNT(w.id)
+                FROM withdrawlog w
+                left join cpinfo c on w.AppId = c.AppId
+                WHERE w.`Status` != -2
+                  AND c.AppId != 10000
+                  and c.AppId = #{appId}
+                  AND CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL + 150 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+               ) as todayWithdrawNum,
+               SUM(IF(b.CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND b.CreateTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                  b.Amount, 0)) AS yesterdayWithdrawAmount,
+               SUM(IF(b.CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND b.CreateTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00'),
+                  b.PlatformFee, 0)) AS yesterdayWithdrawFee,
+               (SELECT COUNT(w.Id)
+                FROM withdrawlog w
+                left join cpinfo c on w.AppId = c.AppId
+                WHERE w.`Status` != -2
+                  AND c.AppId != 10000
+                  and c.AppId = #{appId}
+                  AND CreateTime >= CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -1290 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+                  AND CreateTime &lt; CONCAT(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL +0 MINUTE), '%Y-%m-%d'), ' 00:00:00')
+               ) as yesterdayWithdrawNum
+        FROM (SELECT id, w.amount, w.status, w.platformfee, w.CreateTime, c.AppId, c.country
+              FROM withdrawlog w
+              left join cpinfo c on w.AppId = c.AppId
+              WHERE w.`Status` != -2
+                AND c.AppId != 10000
+                and c.AppId = #{appId}
+             ) b
+    </select>
+
+</mapper>
